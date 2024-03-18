@@ -1,3 +1,5 @@
+import MemberProfile from "./MemberProfile";
+import NavLinks from "./NavLinks";
 import SideBarHeader from "./SideBarHeader";
 
 function SideBar() {
@@ -10,6 +12,8 @@ function SideBar() {
       {/* Sidebar Brew Crafters */}
       {/* Sidebar Shared Brews */}
       {/* Sidebar Profile */}
+      <NavLinks />
+      <MemberProfile />
     </div>
   );
 }

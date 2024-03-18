@@ -1,7 +1,12 @@
-function MemberProfile() {
+import { UserButton, currentUser } from "@clerk/nextjs";
+
+async function MemberProfile() {
+  const user = await currentUser();
+  console.log(user);
   return (
-    <div>
-      <h1>Member Profile</h1>
+    <div className="px-4 items-center">
+      <UserButton afterSignOutUrl="/" />
+      <p>{user.emailAddresses[0].emailAddress}</p>
     </div>
   );
 }
