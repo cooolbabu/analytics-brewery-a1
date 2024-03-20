@@ -9,15 +9,64 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider = "sqlite"
+  url = "file:./file.db"
+  
 }
 
-model User {
-  emailId           String  @id
+// User profile schema. At the moment, we are using tokensAvailable and currentTokenCount to keep track of the user's token balance.
+// tokensAvailable is for the future. It will be a json object that will have (vendor, LLMmodel, dateadded, no_of_tokens)
+// tokensAvailability format: [{vendor: vendor_name,
+                                // models: [ {LLMmodel: model_name,
+                                //           tokens_available: no_of_tokens, // not used for now
+                                //           tokens_used : no_of_tokens}
+                                //           ]
+                                // }]
+// tokensAddedHistory format: {{vendor: vendor_name,
+                                // models: [ {LLMmodel: model_name,
+                                //           date_added: datetime,
+                                //           tokens_added : no_of_tokens}
+                                //           ]
+                                // }}
+
+model UserProfile{
+  id       String   @id @default(uuid())
+  emailId           String  @unique
   firstName         String
   lastName          String
+  dateRegistered   DateTime @default(now())
   currentTokenCount Int
-  tokenUpperLimit   Int
+  tokensAvailable   Int
+  tokensAvailabilty String
+  tokensAddedHistory     String
 }
+
+model  userProfileRequests{
+  id       String   @id @default(uuid())
+  emailId           String
+  requestType       String
+  requestDate       DateTime
+  requestStatus     String
+  requestDetails    String
+  requestResponse   String
+  requestResponseDate DateTime
+  requestResponseBy String
+  requestResponseDetails String
+  requestResponseStatus String
+}
+
+model tokenUsuageAcrossProfiles {
+  id       String   @id @default(uuid())
+  emailId String
+  modelId String
+  dateUsed DateTime
+  tokensForRequest Int
+  tokensForResponse Int
+  promptString String
+  response BigInt
+  destination String
+}
+
+
+
 

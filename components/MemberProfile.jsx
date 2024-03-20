@@ -2,7 +2,6 @@ import { UserButton, currentUser } from "@clerk/nextjs";
 
 async function MemberProfile() {
   const user = await currentUser();
-  console.log(user);
   return (
     <div className="px-4 items-center">
       <UserButton afterSignOutUrl="/" />

@@ -13,7 +13,7 @@ export default function HomePage() {
         height={300}
       />
       <Link href="/new_brews" className="btn btn-secondary ">
-        Let&apos;s prompt some brews
+        Let&apos;s brew some prompts
       </Link>
     </div>
   );
