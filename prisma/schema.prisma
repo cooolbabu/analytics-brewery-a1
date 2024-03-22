@@ -67,6 +67,10 @@ model tokenUsuageAcrossProfiles {
   destination String
 }
 
+model VendorModels {
+  vendor String @id
+  models String
+}
 
 
 
