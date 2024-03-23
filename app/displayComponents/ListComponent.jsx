@@ -6,18 +6,22 @@
  * @optionsList - The list of options to display in the dropdown
  * @onOptionSelect - The function to call when an option is selected
  * return (
- *  <ListDropdownComponent modelslist={modelslist} firstName={firstName} tokensAvailable={tokensAvailable} />
+ *  <ListDropdownComponent_v1 modelslist={modelslist} firstName={firstName} tokensAvailable={tokensAvailable} />
  * )
  *
  * @param {string} defaultValue - The list of models available to the user
  * @param {object} optionsList - The first name of the user
  * @param {function onOptionSelect(handleOptionSelect) }
- * @returns {ListDropdownComponent} - The dropdown component
+ * @returns {ListDropdownComponent_v1} - The dropdown component
  */
 
 import React, { useState } from "react";
 
-const ListDropdownComponent = ({ defaultValue, options, onOptionSelect }) => {
+const ListDropdownComponent_v1 = ({
+  defaultValue,
+  options,
+  onOptionSelect,
+}) => {
   const [selectedOption, setSelectedOption] = useState(defaultValue);
   const [isOpen, setIsOpen] = useState(false);
 
@@ -31,26 +35,18 @@ const ListDropdownComponent = ({ defaultValue, options, onOptionSelect }) => {
   };
 
   return (
-    <div className="dropdown dropdown-hover rounded-xl">
-      <div tabIndex={0} role="button" className="btn m-1 rounded-2xl">
-        {selectedOption}
-      </div>
-      <ul
-        tabIndex={0}
-        className="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-md w-52"
-      >
-        {options.map((option, index) => (
-          <li
-            className="p-2 hover:bg-slate-300"
-            key={index}
-            onClick={() => selectOption(option)}
-          >
-            {option}
-          </li>
-        ))}
-      </ul>
-    </div>
+    <select
+      className="select select-bordered w-full max-w-xs"
+      onChange={() => selectOption(option)}
+    >
+      <option disabled selected>
+        {defaultValue}
+      </option>
+      {options.map((option, index) => (
+        <option key={index}>{option}</option>
+      ))}
+    </select>
   );
 };
 
-export default ListDropdownComponent;
+export default ListDropdownComponent_v1;
