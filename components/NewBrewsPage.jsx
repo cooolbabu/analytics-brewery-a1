@@ -3,6 +3,8 @@
 import ListDropdownComponent from "@/app/displayComponents/ListDropDownComponent";
 import { listModelsByProvider } from "@/lib/LLMProvidersUtils";
 import { useState } from "react";
+import { useMutation } from "@tanstack/react-query";
+import { generatePromptResponseTestCase1, sayHello } from "@/utils/actions";
 
 /**
  * This is the documentation for the NewBrewersPage React component.
@@ -25,6 +27,9 @@ function NewBrewsPage({ modelslist, firstName, tokensAvailable }) {
   const [modelName, setModelName] = useState("Models");
   const [message, setMessage] = useState("Type your prompt here ...");
 
+  console.log(
+    "Rendering NewBrewsPage: ----------------------------Begin------------------------------- "
+  );
   console.log("List of providers: ", providerNames);
   console.log("modelslist: ", modelslist);
   console.log("firstName: ", firstName);
@@ -36,6 +41,37 @@ function NewBrewsPage({ modelslist, firstName, tokensAvailable }) {
 
   console.log("Selected models: ", providerModels);
 
+  const { mutate, isPending, data } = useMutation({
+    mutationFn: (query) => generatePromptResponseTestCase1(query),
+    onSuccess: (data) => {
+      if (!data) {
+        toast.error("Something went wrong");
+        return;
+      }
+      console.log("Data from server: ", data);
+    },
+  });
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    console.log(
+      "[NewBrewersPage.jsx]: Before mutate. Value of query \n",
+      message
+    );
+
+    // Need to standardize objects these are sent to backend servers
+    const promptMessage = {
+      provider: provider,
+      model: modelName,
+      maxTokens: tokensAvailable,
+      message: message,
+    };
+    mutate(promptMessage);
+  };
+
+  console.log(
+    "Rendering NewBrewsPage: ----------------------------end------------------------------- "
+  );
   return (
     <div>
       <h2 className="mb-2">Hi {firstName}. Let&apos;s brew some prompts!</h2>
@@ -64,18 +100,29 @@ function NewBrewsPage({ modelslist, firstName, tokensAvailable }) {
             className="input w-full max-w-xs"
           />
           <div className="w-1/4 py-2">
-            <span className="text-xl font-semibold">
+            <span className="text-xl font-semibold text-neutral">
               Tokens : {tokensAvailable}
             </span>
           </div>
         </div>
         <div className="w-full">
-          <textarea
-            className="form-textarea mt-1 block w-full border rounded-md p-2"
-            rows="8"
-            placeholder={message}
-            onChange={(e) => setMessage(e.target.value)}
-          ></textarea>
+          <form onSubmit={handleSubmit}>
+            <textarea
+              className="form-textarea mt-1 block w-full border rounded-md p-2"
+              rows="8"
+              placeholder="Type your prompt here ..."
+              onChange={(e) => setMessage(e.target.value)}
+            ></textarea>
+            <button
+              className="btn btn-primary min-w-32 ml-4 mt-2"
+              type="submit"
+            >
+              Submit
+            </button>
+            <button className="btn min-w-32 ml-4 mt-2" type="reset">
+              Reset
+            </button>
+          </form>
         </div>
       </div>
     </div>

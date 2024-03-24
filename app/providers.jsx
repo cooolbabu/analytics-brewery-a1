@@ -28,3 +28,5 @@ const Providers = ({ children }) => {
     </QueryClientProvider>
   );
 };
+
+export default Providers;
