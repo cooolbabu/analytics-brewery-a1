@@ -1,14 +1,43 @@
 "use server";
 import OpenAI from "openai";
+import pg from "pg";
 import prisma from "./db";
+import { callOpenAI } from "./callOpenAI";
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
+const { Pool } = pg;
+const pool = new Pool({
+  user: process.env.DB_USER,
+  host: process.env.DB_HOST,
+  database: process.env.DB_NAME,
+  password: process.env.DB_PASSWORD,
+  port: 5432, // Default port for PostgreSQL
+});
+
+export async function getCustomerInformation() {
+  try {
+    await new Promise((resolve) => setTimeout(resolve, 10000)); // Add a 10-second delay
+
+    const client = await pool.connect();
+    const result = await client.query('SELECT * FROM "Customer"');
+    console.log(result.rows);
+    client.release();
+    return result.rows;
+  } catch (error) {
+    console.log(error);
+    return null;
+  }
+}
+
 // Say Hello from the server
 export async function sayHello(message) {
-  console.log("Hello from the server: ", message);
+  console.log("actions.js: Message from client: ", message);
+  console.log(process.env.DB_USER);
+  console.log(process.env.DB_HOST);
+  console.log(process.env.DB_NAME);
   return "Hello from the server";
 }
 
@@ -20,8 +49,22 @@ export async function sayHello(message) {
  * @returns {Promise<string>} The response message from the server.
  */
 export async function generatePromptResponseTestCase1(message) {
-  console.log("Hello from the server: ", message);
-  return "Server responding. You said: " + JSON.stringify(message, null, 2);
+  // console.log("Hello from the server: ", message);
+  console.log("actions.js-generatePromptResponseTestCase1: Provider: ", message.provider);
+  console.log("actions.js-generatePromptResponseTestCase1: Model: ", message.model);
+  console.log("actions.js-generatePromptResponseTestCase1: Persona: ", message.persona);
+  console.log("actions.js-generatePromptResponseTestCase1: Instructions: ", message.instructions);
+  console.log("actions.js-generatePromptResponseTestCase1: Query: ", message.query);
+  console.log("actions.js-generatePromptResponseTestCase1: MaxTokens: ", message.maxTokens);
+
+  // callOpenAI fucntion from callOpenAI.js
+  let response = "";
+  if (message.provider === "OpenAI") {
+    response = await callOpenAI(message.model, message.persona, message.instructions, message.query);
+  }
+  // const response = await callOpenAI("gpt-3.5-turbo", message.query);
+  console.log(response);
+  return response;
 }
 
 // Use Chat history
@@ -31,10 +74,7 @@ export const generateChatResponse = async (chatMessages) => {
 
   try {
     const response = await openai.chat.completions.create({
-      messages: [
-        { role: "system", content: "you are a helpful assistant" },
-        ...chatMessages,
-      ],
+      messages: [{ role: "system", content: "you are a helpful assistant" }, ...chatMessages],
       model: "gpt-3.5-turbo",
       temperature: 0,
     });

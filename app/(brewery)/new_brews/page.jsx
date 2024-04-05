@@ -2,11 +2,7 @@ import { getUserProfile, getProviderModels } from "@/lib/userProfile";
 import { currentUser } from "@clerk/nextjs";
 import NewBrewsPage from "@/components/NewBrewsPage";
 import React from "react";
-import {
-  HydrationBoundary,
-  QueryClient,
-  dehydrate,
-} from "@tanstack/react-query";
+import { HydrationBoundary, QueryClient, dehydrate } from "@tanstack/react-query";
 
 async function BrewsPage() {
   const user = await currentUser();
@@ -22,9 +18,9 @@ async function BrewsPage() {
   return (
     <div>
       <HydrationBoundary state={dehydrate(queryClient)}>
-        <h2 className="mb-10">Brewers Page</h2>
+        <h2 className="mb-2">SQL Mixers Page</h2>
         <NewBrewsPage
-          modelslist={modelsList}
+          modelsList={modelsList}
           firstName={user.firstName}
           tokensAvailable={userProfile[0].tokensAvailable}
         />

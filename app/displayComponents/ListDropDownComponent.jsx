@@ -1,6 +1,7 @@
+"use client";
 import React, { useState } from "react";
 
-const ListDropDownComponent = ({ defaultValue, options, onOptionSelect }) => {
+const ListDropDownComponent = ({ defaultValue, currentValue, options, onOptionSelect }) => {
   const [selectedOption, setSelectedOption] = useState(defaultValue);
 
   const handleOptionChange = (event) => {
@@ -9,11 +10,14 @@ const ListDropDownComponent = ({ defaultValue, options, onOptionSelect }) => {
     onOptionSelect(selectedValue);
   };
 
+  console.log("ListDropDownComponent: SelectedOption: ", selectedOption);
+
   return (
     <div>
       <select
+        name="dropdownList"
         className="select select-bordered w-full max-w-xs"
-        value={selectedOption}
+        value={currentValue}
         onChange={handleOptionChange}
       >
         <option disabled>{defaultValue}</option>
