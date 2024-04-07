@@ -3,36 +3,36 @@ import OpenAI from "openai";
 import pg from "pg";
 import prisma from "./db";
 import { callOpenAI } from "./callOpenAI";
+import { supabaseClientPool } from "@/lib/db";
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
-const { Pool } = pg;
-const pool = new Pool({
-  user: process.env.DB_USER,
-  host: process.env.DB_HOST,
-  database: process.env.DB_NAME,
-  password: process.env.DB_PASSWORD,
-  port: 5432, // Default port for PostgreSQL
-});
-
 export async function getCustomerInformation() {
   try {
-    await new Promise((resolve) => setTimeout(resolve, 10000)); // Add a 10-second delay
+    //await new Promise((resolve) => setTimeout(resolve, 3000)); // Add a 3-second delay
 
-    const client = await pool.connect();
-    const result = await client.query('SELECT * FROM "Customer"');
-    console.log(result.rows);
-    client.release();
-    return result.rows;
+    const client = supabaseClientPool;
+    //console.log("getCustomerInformation: client", client);
+    const sqlResult = await client.query(
+      'SELECT "CustomerId", "FirstName", "LastName", "City", "State", "Country" FROM "Customer" LIMIT 3'
+    );
+    console.log("getCustomerInformation: sqlResult.rows ", sqlResult.rows);
+    const jsonObject = JSON.stringify(sqlResult.rows);
+    console.log("getCustomerInformation: jsonObject", jsonObject);
+    return sqlResult.rows;
   } catch (error) {
     console.log(error);
-    return null;
+    return { error: "getCustomerInformation()::Something went wrong" };
   }
 }
 
-// Say Hello from the server
+/**
+ * Simple Hello message from the server. Prints .env variables in console logs.
+ * @param {*} message
+ * @returns
+ */
 export async function sayHello(message) {
   console.log("actions.js: Message from client: ", message);
   console.log(process.env.DB_USER);
@@ -41,7 +41,6 @@ export async function sayHello(message) {
   return "Hello from the server";
 }
 
-// Say Hello from the server
 /**
  * Generates a prompt response for testCase1.
  *
@@ -65,6 +64,33 @@ export async function generatePromptResponseTestCase1(message) {
   // const response = await callOpenAI("gpt-3.5-turbo", message.query);
   console.log(response);
   return response;
+}
+
+/**
+ * A router function that calls appropriate functions to execute queries.
+ *
+ * @param {Object} messages
+ * @param {String} sqlQuery
+ * @returns {Promise<string>} sqlResults
+ */
+export async function executeQueries(message) {
+  console.log("actions.js-executeQuery: Persona: ", message.persona);
+  console.log("actions.js-executeQuery: SQL Query: ", message.sqlStatement);
+
+  try {
+    //await new Promise((resolve) => setTimeout(resolve, 3000)); // Add a 3-second delay
+
+    const client = supabaseClientPool;
+    //console.log("getCustomerInformation: client", client);
+    const sqlResult = await client.query(message.sqlStatement);
+    console.log("getCustomerInformation: sqlResult.rows ", sqlResult.rows);
+    const jsonObject = JSON.stringify(sqlResult.rows);
+    console.log("getCustomerInformation: jsonObject", jsonObject);
+    return sqlResult.rows;
+  } catch (error) {
+    console.log(error);
+    return { error: "getCustomerInformation()::Something went wrong" };
+  }
 }
 
 // Use Chat history

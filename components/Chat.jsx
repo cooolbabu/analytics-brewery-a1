@@ -4,8 +4,9 @@ import { useMutation } from "@tanstack/react-query";
 import { useState, useEffect } from "react";
 import toast from "react-hot-toast";
 import { getCustomerInformation } from "@/utils/actions";
-import CustomerInfoComponent from "@/app/displayComponents/CustomerInfo";
+import CustomerInfoComponent from "@/app/displayComponents/CustomerInfo2";
 import CountdownComponent from "@/app/displayComponents/CountdownComp";
+import SQLTable from "./SQLTable";
 
 function Chat() {
   const [text, setText] = useState("");
@@ -20,8 +21,9 @@ function Chat() {
         return;
       }
 
+      console.log("[Chat.jsx]: Inside onSuccess. Value of data: \n", data);
       setCustomersData(data);
-      console.log("[Chat.jsx]: Inside onSuccess. Value of data: \n", customersData);
+      console.log("[Chat.jsx]: Inside onSuccess. Value of Customers data: \n", customersData);
     },
   });
 

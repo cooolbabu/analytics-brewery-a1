@@ -1,11 +1,13 @@
 "use client";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
+// import * as prettier from "prettier";
 import { okaidia } from "react-syntax-highlighter/dist/esm/styles/prism";
 import ListDropdownComponent from "@/app/displayComponents/ListDropDownComponent";
 import { listModelsByProvider } from "@/lib/LLMProvidersUtils";
 import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
-import { generatePromptResponseTestCase1, sayHello } from "@/utils/actions";
+import { executeQueries, generatePromptResponseTestCase1, sayHello } from "@/utils/actions";
+import SQLTable from "./SQLTable";
 
 /**
  * This is the documentation for the NewBrewersPage React component.
@@ -29,8 +31,12 @@ function NewBrewsPage({ modelsList, firstName, tokensAvailable }) {
   const [modelName, setModelName] = useState("Models");
   const [personaName, setPersonaName] = useState("Personas");
   const [message, setMessage] = useState("Type your prompt here ...");
-  const [responseSQL, setResponseSQL] = useState("SQL response here ...");
-  const [responseMsg, setResponseMsg] = useState("Descriptive response displayed here...");
+  const [responseSQL, setResponseSQL] = useState(
+    'SELECT * FROM "Customer" WHERE "FirstName" = \'Taylor\' OR "LastName" = \'Taylor\''
+  );
+
+  const [sqlResults, setSQLResults] = useState([]);
+  const [summaryMsg, setSummaryMsg] = useState("Descriptive summarization displayed here...");
 
   console.log(
     "NewBrewsPage.jsx: Rendering NewBrewsPage: ----------------------------Begin------------------------------- "
@@ -47,17 +53,67 @@ function NewBrewsPage({ modelsList, firstName, tokensAvailable }) {
 
   const providerModels = listModelsByProvider(modelsList, provider);
 
-  const { mutate, isPending, data } = useMutation({
+  // Use mutation function to generate a SQL query from the prompt
+  const {
+    mutate: runPromptQuery, // suffixing PQ
+    isPending_PQ,
+    data: data_PQ,
+  } = useMutation({
     mutationFn: (query) => generatePromptResponseTestCase1(query),
     onSuccess: (data) => {
       if (!data) {
         toast.error("Something went wrong");
         return;
       }
-      console.log("NewBrewsPage.jsx: Data from server: ", data);
+      console.log("NewBrewsPage.jsx-Mutation: runPromptQuery: ", data);
       setResponseSQL(data);
     },
   });
+
+  // Use mutation function to run a SQL query
+  const {
+    mutate: runSQLQuery, // suffixing SQL
+    isPending_SQL,
+    data: data_SQL,
+  } = useMutation({
+    mutationFn: (query) => executeQueries(query),
+    onSuccess: (data) => {
+      if (!data) {
+        toast.error("Something went wrong");
+        return;
+      }
+      console.log("NewBrewsPage.jsx-Mutation: runSQLQuery: ", data);
+      setSQLResults(data);
+      console.log("NewBrewsPage.jsx-Mutation: sqlResults: ", sqlResults);
+    },
+  });
+
+  const handleRunQuery = (e) => {
+    //e.preventDefault();
+    console.log("NewBrewersPage.jsx: handleRunQuery");
+
+    // Standardize this sucker - high priority
+    const promptMessage = {
+      provider: provider,
+      model: modelName,
+      persona: personaName,
+      instructions: modelsList.personas.find((persona) => persona.assistant === personaName)?.instructions,
+      sourceDB: modelsList.personas.find((persona) => persona.assistant === personaName)?.sourceDB,
+      maxTokens: tokensAvailable,
+      query: message,
+      sqlStatement: responseSQL,
+    };
+    console.log("NewBrewersPage.jsx: Before executeQueries. Value of query \n", promptMessage.sqlStatement);
+
+    runSQLQuery(promptMessage);
+    console.log("NewBrewersPage.jsx: after executeQueries. Value of query \n", sqlResults);
+  };
+
+  const handleSummarizeResults = (e) => {
+    //e.preventDefault();
+    console.log("NewBrewersPage.jsx: Summarize results \n");
+    executeQueries(promptMessage, responseSQL);
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -81,10 +137,11 @@ function NewBrewsPage({ modelsList, firstName, tokensAvailable }) {
       model: modelName,
       persona: personaName,
       instructions: modelsList.personas.find((persona) => persona.assistant === personaName)?.instructions,
+      sourceDB: modelsList.personas.find((persona) => persona.assistant === personaName)?.sourceDB,
       maxTokens: tokensAvailable,
       query: message,
     };
-    mutate(promptMessage);
+    runPromptQuery(promptMessage);
   };
 
   console.log(
@@ -96,7 +153,7 @@ function NewBrewsPage({ modelsList, firstName, tokensAvailable }) {
         <h2 className="mb-2">Hi {firstName}. Let&apos;s do some prompts!</h2>
         <span className="text-xl font-semibold text-neutral">Tokens : {tokensAvailable}</span>
       </div>
-      <div className="rounded-xl shadow-md items-center space-y-4 border border-green-400 p-2 ">
+      <div className="rounded-xl shadow-md items-center space-y-4 border border-base-300 p-2 ">
         <div className="flex flex-col md:flex-row justify-between items-left w-full gap-2">
           <div className="md:w-1/4">
             <ListDropdownComponent
@@ -138,46 +195,68 @@ function NewBrewsPage({ modelsList, firstName, tokensAvailable }) {
                 placeholder="Type your prompt here ..."
                 onChange={(e) => setMessage(e.target.value)}
               ></textarea>
-              <div>
-                <button className="btn btn-sm btn-primary min-w-32 ml-2 mt-2" type="submit">
+              <div className="m-2 space-x-4">
+                <button className="btn btn-sm btn-primary min-w-32" type="submit">
                   Submit
                 </button>
-                <button className="btn btn-sm btn-accent min-w-32 ml-2 mt-2" type="reset">
+                <button className="btn btn-sm btn-accent min-w-32" type="reset">
                   Reset
                 </button>
               </div>
             </div>
           </form>
         </div>
+        {/* Red border */}
         {/* form to submit prompt */}
+      </div>
+      <div className="rounded-xl shadow-md items-center space-y-4 border border-base-300 p-2 mt-4">
         {/* Two areas to display the prompt and sql results */}
-        <div className="flex flex-col md:flex-row space-8 gap-4">
-          <div className="flex flex-col md:w-1/2">
-            <div className="flex flex-col md:flex-row gap-2">
-              <div className="text-lg font-semibold mb-4">SQL Query</div>
-              <button className="btn btn-sm btn-primary min-w-32 ml-2 mt-2" type="reset">
+        <div className="flex flex-col md:flex-row gap-8">
+          <div className="flex flex-col md:w-1/3">
+            <div className="flex flex-col md:flex-row justify-between px-4">
+              <div className="text-lg font-semibold">SQL Query</div>
+              <button className="btn btn-sm btn-primary min-w-32" type="reset" onClick={(e) => handleRunQuery()}>
                 Run Query
               </button>
             </div>
 
-            <SyntaxHighlighter language="sql" style={okaidia}>
-              {responseSQL}
-            </SyntaxHighlighter>
+            <div className="text-xs">
+              <SyntaxHighlighter language="sql" style={okaidia}>
+                {responseSQL}
+              </SyntaxHighlighter>
+            </div>
           </div>
-          <div className="flex flex-col md:w-1/2 ">
-            <div className="flex flex-col md:flex-row gap-2">
+          <div className="flex flex-col md:w-2/3">
+            <div className="flex flex-col md:flex-row justify-between px-4">
               <div className="text-lg font-semibold">SQL Results</div>
-              <button className="btn btn-primary btn-sm min-w-32 ml-2 mt-2" type="reset">
+              <button
+                className="btn btn-primary btn-sm min-w-32"
+                type="reset"
+                onClick={(e) => handleSummarizeResults()}
+              >
                 Summarize
               </button>
             </div>
-            {/* <div className="text-sm">{responseMsg}</div> */}
+
+            <SQLTable queryResultsJson data={sqlResults} />
           </div>
         </div>
         {/* Two areas to display the prompt and sql results */}
       </div>
+      {/* Red border */}
     </div>
   );
 }
 
 export default NewBrewsPage;
+
+// Documentation for the NewBrewsPage component
+// The flow is as follows:
+// 1. The user selects a provider, models, Persona from the dropdown list
+// 2. The user types a prompt in the textarea
+// 3. The user clicks the Submit button
+// 4. The user clicks the Run Query button
+// 5. The user clicks the Summarize button
+//
+// The component has the following props:
+// @modelsList - The list of models available to the user

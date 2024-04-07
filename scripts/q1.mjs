@@ -27,7 +27,7 @@ async function retrieveData() {
   const client = await pool.connect();
   try {
     // Execute a query
-    const result = await client.query('SELECT * FROM "Customer"');
+    const result = await client.query('SELECT count(*) FROM "Customer"');
 
     // Log the result
     console.log(result.rows);
