@@ -1,9 +1,10 @@
 "use server";
 import OpenAI from "openai";
-import pg from "pg";
+import formatter from "prettier";
 import prisma from "./db";
-import { callOpenAI } from "./callOpenAI";
+import { callOpenAI, generateSQLResultsSummarization } from "./callOpenAI";
 import { supabaseClientPool } from "@/lib/db";
+import { callMistral } from "./mistral/callMistral";
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -30,11 +31,11 @@ export async function getCustomerInformation() {
 
 /**
  * Simple Hello message from the server. Prints .env variables in console logs.
- * @param {*} message
+ * @param {Object} message
  * @returns
  */
 export async function sayHello(message) {
-  console.log("actions.js: Message from client: ", message);
+  console.log("actions.js -sayHello: Message from client: ", message);
   console.log(process.env.DB_USER);
   console.log(process.env.DB_HOST);
   console.log(process.env.DB_NAME);
@@ -60,9 +61,11 @@ export async function generatePromptResponseTestCase1(message) {
   let response = "";
   if (message.provider === "OpenAI") {
     response = await callOpenAI(message.model, message.persona, message.instructions, message.query);
+  } else if (message.provider === "Mistral") {
+    response = await callMistral(message.model, message.persona, message.instructions, message.query);
   }
-  // const response = await callOpenAI("gpt-3.5-turbo", message.query);
-  console.log(response);
+
+  console.log("actions.js-generatePromptResponseTestCase1: ", response);
   return response;
 }
 
@@ -91,6 +94,34 @@ export async function executeQueries(message) {
     console.log(error);
     return { error: "getCustomerInformation()::Something went wrong" };
   }
+}
+
+/**
+ * A function that accepts data object. The object conatians, initial prompt request, SQL query and SQL
+ * results. Gen AI takes these inputs and generates a response.
+ *
+ * @param {Object} message
+ * @returns {String} resultSummary - The response message from the server.
+ */
+export async function executeQuerySummarization(message) {
+  console.log("actions.js-executeQuerySummarization: message: ", message);
+
+  let instructions = `You are a Business Analyst. You are given a question and the data to answer the question. 
+  Question is: { ${message.query} }
+  Data is: { ${message.sqlResults} }  
+  You must understand the question. Review the data. 
+  Review your analysis to ensure it is accurate.
+  Provide a summary of your analysis.`;
+
+  let response = await generateSQLResultsSummarization(
+    message.model,
+    "",
+    instructions,
+    message.query + "\n" + message.sqlResults
+  );
+
+  console.log("actions.js-executeQuerySummarization: ", response);
+  return response;
 }
 
 // Use Chat history

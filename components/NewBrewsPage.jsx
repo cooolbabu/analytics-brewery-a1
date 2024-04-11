@@ -1,12 +1,11 @@
 "use client";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
-// import * as prettier from "prettier";
 import { okaidia } from "react-syntax-highlighter/dist/esm/styles/prism";
 import ListDropdownComponent from "@/app/displayComponents/ListDropDownComponent";
 import { listModelsByProvider } from "@/lib/LLMProvidersUtils";
 import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
-import { executeQueries, generatePromptResponseTestCase1, sayHello } from "@/utils/actions";
+import { executeQueries, executeQuerySummarization, generatePromptResponseTestCase1 } from "@/utils/actions";
 import SQLTable from "./SQLTable";
 
 /**
@@ -38,9 +37,7 @@ function NewBrewsPage({ modelsList, firstName, tokensAvailable }) {
   const [sqlResults, setSQLResults] = useState([]);
   const [summaryMsg, setSummaryMsg] = useState("Descriptive summarization displayed here...");
 
-  console.log(
-    "NewBrewsPage.jsx: Rendering NewBrewsPage: ----------------------------Begin------------------------------- "
-  );
+  console.log("NewBrewsPage.jsx: ----------------------------Begin------------------------------- ", modelsList);
   console.log("NewBrewsPage.jsx: List of providers: ", providerNames);
   console.log("NewBrewsPage.jsx: modelsList: ", modelsList);
   console.log("NewBrewsPage.jsx: Personas: ", personas);
@@ -66,6 +63,8 @@ function NewBrewsPage({ modelsList, firstName, tokensAvailable }) {
         return;
       }
       console.log("NewBrewsPage.jsx-Mutation: runPromptQuery: ", data);
+
+      console.log("NewBrewsPage.jsx-Mutation: runPromptQuery: prettierData: ", data);
       setResponseSQL(data);
     },
   });
@@ -85,6 +84,24 @@ function NewBrewsPage({ modelsList, firstName, tokensAvailable }) {
       console.log("NewBrewsPage.jsx-Mutation: runSQLQuery: ", data);
       setSQLResults(data);
       console.log("NewBrewsPage.jsx-Mutation: sqlResults: ", sqlResults);
+    },
+  });
+
+  // Use mutation function to run a summarize query results
+  const {
+    mutate: runQueryresultSummarization, // suffixing QRS
+    isPending_QRS,
+    data: data_QRS,
+  } = useMutation({
+    mutationFn: (query) => executeQuerySummarization(query),
+    onSuccess: (data) => {
+      if (!data) {
+        toast.error("Something went wrong");
+        return;
+      }
+      console.log("NewBrewsPage.jsx-Mutation: runQueryresultSummarization: ", data);
+      setSummaryMsg(data);
+      console.log("NewBrewsPage.jsx-Mutation: runQueryresultSummarization: ", summaryMsg);
     },
   });
 
@@ -112,7 +129,19 @@ function NewBrewsPage({ modelsList, firstName, tokensAvailable }) {
   const handleSummarizeResults = (e) => {
     //e.preventDefault();
     console.log("NewBrewersPage.jsx: Summarize results \n");
-    executeQueries(promptMessage, responseSQL);
+    // Standardize this sucker - high priority
+    const promptMessage = {
+      provider: provider,
+      model: modelName,
+      persona: personaName,
+      instructions: modelsList.personas.find((persona) => persona.assistant === personaName)?.instructions,
+      sourceDB: modelsList.personas.find((persona) => persona.assistant === personaName)?.sourceDB,
+      maxTokens: tokensAvailable,
+      query: message,
+      sqlStatement: responseSQL,
+      sqlResults: sqlResults,
+    };
+    runQueryresultSummarization(promptMessage, responseSQL);
   };
 
   const handleSubmit = (e) => {
@@ -196,10 +225,10 @@ function NewBrewsPage({ modelsList, firstName, tokensAvailable }) {
                 onChange={(e) => setMessage(e.target.value)}
               ></textarea>
               <div className="m-2 space-x-4">
-                <button className="btn btn-sm btn-primary min-w-32" type="submit">
+                <button className="btn btn-sm btn-primary min-w-28" type="submit">
                   Submit
                 </button>
-                <button className="btn btn-sm btn-accent min-w-32" type="reset">
+                <button className="btn btn-sm min-w-28" type="reset">
                   Reset
                 </button>
               </div>
@@ -209,41 +238,66 @@ function NewBrewsPage({ modelsList, firstName, tokensAvailable }) {
         {/* Red border */}
         {/* form to submit prompt */}
       </div>
-      <div className="rounded-xl shadow-md items-center space-y-4 border border-base-300 p-2 mt-4">
-        {/* Two areas to display the prompt and sql results */}
-        <div className="flex flex-col md:flex-row gap-8">
-          <div className="flex flex-col md:w-1/3">
-            <div className="flex flex-col md:flex-row justify-between px-4">
-              <div className="text-lg font-semibold">SQL Query</div>
-              <button className="btn btn-sm btn-primary min-w-32" type="reset" onClick={(e) => handleRunQuery()}>
+      {/* Two areas to display the query and sql results - Part1*/}
+      <div className="rounded-xl shadow-md items-center border border-b-2 border-base-300 p-2 mt-4">
+        <div className="flex flex-col">
+          <div className="flex flex-col md:flex-row border-b-2 border-base py-2">
+            <div className="flex flex-col md:w-1/6">
+              <h2 className="text-lg font-semibold px-4">SQL Query</h2>
+              <button className="btn btn-sm btn-primary mt-4" type="button" onClick={(e) => handleRunQuery()}>
                 Run Query
               </button>
             </div>
 
-            <div className="text-xs">
+            <div className="text-xs md:flex-grow md:px-8 md:mt-2 md:w-5/6 ">
               <SyntaxHighlighter language="sql" style={okaidia}>
                 {responseSQL}
               </SyntaxHighlighter>
             </div>
           </div>
-          <div className="flex flex-col md:w-2/3">
-            <div className="flex flex-col md:flex-row justify-between px-4">
-              <div className="text-lg font-semibold">SQL Results</div>
-              <button
-                className="btn btn-primary btn-sm min-w-32"
-                type="reset"
-                onClick={(e) => handleSummarizeResults()}
-              >
-                Summarize
-              </button>
+          {/* Two areas to display the query and sql results - Part2*/}
+          <div className="flex flex-col mt-4">
+            <div className="flex flex-col md:flex-row">
+              <div className="flex flex-col md:w-1/6">
+                <h2 className="text-lg font-semibold px-4">SQL Results</h2>
+                <button className="btn btn-primary btn-sm mt-4" type="button" onClick={(e) => handleSummarizeResults()}>
+                  Summarize
+                </button>
+              </div>
+              <div className="md:w-5/6 md:px-8 md:mt-2">
+                <SQLTable queryResultsJson data={sqlResults} />
+              </div>
             </div>
-
-            <SQLTable queryResultsJson data={sqlResults} />
           </div>
         </div>
-        {/* Two areas to display the prompt and sql results */}
+        {/* Two areas to display the query and sql results */}
       </div>
-      {/* Red border */}
+      <div className="flex flex-col md:flex-row rounded-xl shadow-md items-center border border-b-2 border-base-300 p-2 mt-4 mb-4 gap-4">
+        <div className="card bg-base-100 shadow-xl md:w-1/2">
+          <div className="card-body">
+            <h2 className="card-title">Query Summarization</h2>
+            <p>{summaryMsg}</p>
+            <div className="card-actions justify-start">
+              <div className="badge badge-outline">Love it!!</div>
+              <div className="badge badge-outline">Help me!!</div>
+            </div>
+          </div>
+        </div>
+
+        <div className="card bg-base-100 shadow-xl md:w-1/2">
+          <div className="card-body">
+            <h2 className="card-title">
+              My Notes
+              <div className="badge badge-secondary">NEW</div>
+            </h2>
+            <p>Text area for notes Lorem ipsum dolor, sit amet co</p>
+            <div className="card-actions justify-start">
+              <div className="badge badge-outline">Save it !!</div>
+              <div className="badge badge-outline">Trash it!!</div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

@@ -1,5 +1,5 @@
 async function UserVendorModelsStatus({ userProfile }) {
-  //console.log("UserVendorModelsStatus: ", userProfile);
+  console.log("UserVendorModelsStatus: ", userProfile);
   const { emailId, dateRegistered, tokensAvailabilty } = userProfile;
   // console.log(
   //   "UserVendorModelsStatus: ",
@@ -20,7 +20,7 @@ async function UserVendorModelsStatus({ userProfile }) {
         <div key={index} className="mb-8">
           <h2 className="text-xl font-bold mb-4">{vendor.vendor}</h2>
           <table className="min-w-full table-auto border-collapse border border-slate-200">
-            <thead>
+            <thead className="text-black">
               <tr>
                 <th className="border border-slate-500 bg-slate-300 p-2 w-48">Model</th>
                 {/* <th className="border border-slate-300 bg-slate-200 p-2">

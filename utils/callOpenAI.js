@@ -38,6 +38,31 @@ export async function callOpenAI(modelName, persona, instructions, promptMessage
       return null;
     }
 }
+
+export async function generateSQLResultsSummarization(modelName, persona, instructions, promptMessage) {
+  try {
+    console.log("callOpenAI.js-generateSQLResultsSummarization: ", instructions + "\n" + promptMessage);
+
+    const response = await openai.chat.completions.create({
+      messages: [
+        { role: "system", content: instructions },
+        { role: "user", content: promptMessage },
+      ],
+      model: "gpt-3.5-turbo",
+      temperature: 0,
+    });
+
+    console.log(response.choices[0].message.content);
+    //console.log(JSON.parse(response.choices[0].message.content).query);
+    console.log("Returning from generateSQLResultsSummarization");
+    return response.choices[0].message.content;
+  } catch (error) {
+    console.log(error);
+  }
+
+  return "Something went wrong";
+}
+
 async function loadPersonaAndGenerateChatResponse(modelName, persona, instructions, promptMessage) {
   try {
     const filePath = path.join("./", "assets", "ChinookDBER.txt");
@@ -49,12 +74,12 @@ async function loadPersonaAndGenerateChatResponse(modelName, persona, instructio
         { role: "system", content: instructions + "\n" + fileContent },
         { role: "user", content: promptMessage },
       ],
-      model: "gpt-3.5-turbo",
+      model: modelName,
       temperature: 0,
     });
 
     console.log(response.choices[0].message.content);
-    const cleanedJsonString = response.choices[0].message.content.trim().replace(/^```|```$/g, "");
+    const cleanedJsonString = response.choices[0].message.content.trim().replace(/^```json|```$/g, "");
     console.log("cleanedJsonString: ", cleanedJsonString);
     const responseStr = JSON.parse(cleanedJsonString).query;
     console.log("responseStr: ", responseStr);

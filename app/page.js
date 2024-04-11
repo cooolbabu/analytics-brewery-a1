@@ -5,15 +5,10 @@ import analystBreweryImage from "../assets/AnalystBewery.png";
 
 export default function HomePage() {
   return (
-    <div>
-      <Image
-        src={analystBreweryImage}
-        alt="Analytics Brewery"
-        width={300}
-        height={300}
-      />
-      <Link href="/new_brews" className="btn btn-secondary ">
-        Let&apos;s brew some prompts
+    <div className="max-w-md mx-auto text-center m-8">
+      <Image src={analystBreweryImage} alt="Analytics Brewery" className="mb-6" />
+      <Link href="/new_brews" className="btn btn-secondary  ">
+        Let&apos;s mix some data
       </Link>
     </div>
   );
