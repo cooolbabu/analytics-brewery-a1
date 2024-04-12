@@ -1,22 +1,13 @@
 // pages/customers.js
-"use client";
 
-import { useEffect, useState } from "react";
+import { QueryDataFromSupabase } from "@/lib/db";
+import { useQuery } from "@tanstack/react-query";
 
 function CustomerPage() {
-  const [customers, setCustomers] = useState([]);
+  let qStr = 'SELECT * FROM "Customers" LIMIT 5;';
+  const x = useQuery({ queryKey: ["customers"], queryFn: QueryDataFromSupabase(qStr, "sqlRows") });
 
-  useEffect(() => {
-    async function fetchData() {
-      const res = await fetch("/pages/api/customer.js");
-      const data = await res.json();
-      setCustomers(data);
-    }
-
-    fetchData();
-  }, []);
-
-  console.log("Fetching customers:", customers);
+  console.log("Fetching customers from Supabase:", customers);
 
   return (
     <div>
