@@ -197,7 +197,7 @@ function NewBrewsPage({ modelsList, firstName, tokensAvailable }) {
               ></textarea>
               <div className="m-2 space-x-4">
                 <button className="btn btn-sm btn-primary min-w-32" type="submit">
-                  Submit
+                  {isPending_PQ ? "Please wait" : "Submit"}
                 </button>
                 <button className="btn btn-sm btn-accent min-w-32" type="reset">
                   Reset
@@ -216,7 +216,7 @@ function NewBrewsPage({ modelsList, firstName, tokensAvailable }) {
             <div className="flex flex-col md:flex-row justify-between px-4">
               <div className="text-lg font-semibold">SQL Query</div>
               <button className="btn btn-sm btn-primary min-w-32" type="reset" onClick={(e) => handleRunQuery()}>
-                Run Query
+                {isPending_SQL ? "Please wait" : "Run Query"}
               </button>
             </div>
 
