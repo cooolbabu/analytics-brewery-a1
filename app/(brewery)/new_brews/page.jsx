@@ -18,7 +18,7 @@ async function BrewsPage() {
   return (
     <div>
       <HydrationBoundary state={dehydrate(queryClient)}>
-        <h2 className="mb-2">SQL Mixers Page</h2>
+        <h2 className="mb-2 text-2xl">Data Mixers</h2>
         <NewBrewsPage
           modelsList={modelsList}
           firstName={user.firstName}

@@ -21,9 +21,9 @@ export async function callMistral(modelName, persona, instructions, promptMessag
   } else if (persona === "Personas" || persona === null) {
     return "Please select a persona";
   } else if (persona === "ChinookAssistant") {
-    console.log(
-      "Mistral service invoked: " + modelName + " - " + persona + " - " + instructions + " - " + promptMessage
-    );
+    // console.log(
+    //   "Mistral service invoked: " + modelName + " - " + persona + " - " + instructions + " - " + promptMessage
+    // );
     return await GenerateChatResponse(modelName, persona, instructions, promptMessage);
   }
 }
@@ -34,19 +34,19 @@ async function loadPersonaAndGenerateChatResponse(modelName, persona, instructio
   try {
     const filePath = path.join("./", "assets", "ChinookDBER.txt");
     const fileContent = fs.readFileSync(filePath, "utf-8");
-    //console.log("callOpenAI.js-loadPersonaAndChatResponse: ", instructions + "\n" + fileContent);
+    // console.log("callOpenAI.js-loadPersonaAndGenerateChatResponse: ", instructions + "\n" + fileContent);
 
     const model = "mistral-small-latest";
     // const model = "open-mixtral-8x7b";
 
-    chatResponse = await client.chat({
-      messages: [
-        { role: "system", content: instructions + "\n" + fileContent },
-        { role: "user", content: promptMessage },
-      ],
-      model: modelName,
-      temperature: 0,
-    });
+    // chatResponse = await client.chat({
+    //   messages: [
+    //     { role: "system", content: instructions + "\n" + fileContent },
+    //     { role: "user", content: promptMessage },
+    //   ],
+    //   model: modelName,
+    //   temperature: 0,
+    // });
   } catch (error) {
     console.log(error);
     response = "Unable to communicate with " + modelName + " model";
@@ -88,18 +88,30 @@ async function loadPersonaAndGenerateChatResponse(modelName, persona, instructio
  * @returns {Promise<string>} The generated chat response.
  */
 export async function GenerateChatResponse(modelName, persona, instructions, promptMessage) {
-  let response = "Soemthing went wrong";
+  let response = "Something went wrong";
   let chatResponse = null;
 
   try {
     const model = "mistral-medium-latest";
     modelName = modelName.trim() || model; // set default model
 
+    const filePath = path.join("./", "assets", "ChinookDBER.txt");
+    const fileContent = fs.readFileSync(filePath, "utf-8");
+    // console.log("\ncallMistral.js-GenerateChatResponse: ", instructions + "\n" + fileContent);
+
+    // chatResponse = await client.chat({
+    //   messages: [
+    //     { role: "system", content: instructions },
+    //     { role: "user", content: promptMessage },
+    //   ],
+    //   model: modelName,
+    //   temperature: 0,
+    // })
+
+    let chatMessage = instructions + fileContent + "\n Please answer the following question: \n" + promptMessage;
+    console.log("\n\nChat message to Mistral: ", chatMessage);
     chatResponse = await client.chat({
-      messages: [
-        { role: "system", content: instructions },
-        { role: "user", content: promptMessage },
-      ],
+      messages: [{ role: "user", content: chatMessage }],
       model: modelName,
       temperature: 0,
     });

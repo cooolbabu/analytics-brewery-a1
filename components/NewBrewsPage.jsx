@@ -178,7 +178,7 @@ function NewBrewsPage({ modelsList, firstName, tokensAvailable }) {
   );
   return (
     <div>
-      <div className="flex flex-row items-center">
+      <div className="flex flex-row items-center justify-between px-20">
         <h2 className="mb-2">Hi {firstName}. Let&apos;s do some prompts!</h2>
         <span className="text-xl font-semibold text-neutral">Tokens : {tokensAvailable}</span>
       </div>
@@ -272,7 +272,7 @@ function NewBrewsPage({ modelsList, firstName, tokensAvailable }) {
         </div>
         {/* Two areas to display the query and sql results */}
       </div>
-      <div className="flex flex-col md:flex-row rounded-xl shadow-md items-center border border-b-2 border-base-300 p-2 mt-4 mb-4 gap-4">
+      <div className="flex flex-col md:flex-row rounded-xl shadow-md items-center border border-b-2 border-base-300 mt-4 mb-4 pb-4 gap-4">
         <div className="card bg-base-100 shadow-xl md:w-1/2">
           <div className="card-body">
             <h2 className="card-title">Query Summarization</h2>
