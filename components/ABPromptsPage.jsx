@@ -3,6 +3,7 @@ import { getAllABPrompts } from "@/utils/actions";
 import { useQuery } from "@tanstack/react-query";
 import ABPromptCardList from "./ABPromptList";
 import { useState } from "react";
+
 function ABPromptsPage() {
   const [searchValue, setSearchValue] = useState("");
   const { data, isPending } = useQuery({
@@ -10,11 +11,11 @@ function ABPromptsPage() {
     queryFn: () => getAllABPrompts(searchValue),
   });
 
-  // console.log("ABPromptsPage: data", data);
+  console.log("ABPromptsPage: data", data);
 
   return (
     <>
-      <form className="max-w-lg mb-12">
+      <form className="max-w-lg mb-12 mt-12">
         <div className="join w-full">
           <input
             type="text"
@@ -31,7 +32,7 @@ function ABPromptsPage() {
             disabled={isPending}
             onClick={() => setSearchValue("")}
           >
-            {isPending ? "please wait" : "reset"}
+            {isPending ? "please wait" : "Reset"}
           </button>
         </div>
       </form>

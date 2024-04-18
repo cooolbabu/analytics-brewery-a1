@@ -5,8 +5,14 @@ import ListDropdownComponent from "@/app/displayComponents/ListDropDownComponent
 import { listModelsByProvider } from "@/lib/LLMProvidersUtils";
 import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
-import { executeQueries, executeQuerySummarization, generatePromptResponseTestCase1 } from "@/utils/actions";
+import {
+  executeQueries,
+  executeQuerySummarization,
+  generatePromptResponse,
+  savePromptQueryResults,
+} from "@/utils/actions";
 import SQLTable from "./SQLTable";
+import { useAuth } from "@clerk/nextjs";
 
 /**
  * This is the documentation for the NewBrewersPage React component.
@@ -24,6 +30,7 @@ import SQLTable from "./SQLTable";
  * @param {number} tokensAvailable - The number of tokens available to the user
  */
 function NewBrewsPage({ modelsList, firstName, tokensAvailable }) {
+  const { userId } = useAuth();
   const providerNames = modelsList.providers.map((provider) => provider.name);
   const personas = modelsList.personas.map((persona) => persona.assistant);
   const [provider, setProvider] = useState("Providers");
@@ -56,7 +63,7 @@ function NewBrewsPage({ modelsList, firstName, tokensAvailable }) {
     isPending_PQ,
     data: data_PQ,
   } = useMutation({
-    mutationFn: (query) => generatePromptResponseTestCase1(query),
+    mutationFn: (query) => generatePromptResponse(query),
     onSuccess: (data) => {
       if (!data) {
         toast.error("Something went wrong");
@@ -66,6 +73,23 @@ function NewBrewsPage({ modelsList, firstName, tokensAvailable }) {
 
       console.log("NewBrewsPage.jsx-Mutation: runPromptQuery: prettierData: ", data);
       setResponseSQL(data);
+    },
+  });
+
+  // Use mutation function to save the result.
+  const {
+    mutate: runSaveResults, // suffixing SR
+    isPending_SR,
+    data: data_SR,
+  } = useMutation({
+    mutationFn: (results) => savePromptQueryResults(results),
+    onSuccess: (data) => {
+      if (!data) {
+        toast.error("Something went wrong");
+        return;
+      }
+      console.log("NewBrewsPage.jsx-Mutation: savePromptQueryResults: ", results);
+      console.log("NewBrewsPage.jsx-Mutation: savePromptQueryResults: ", data);
     },
   });
 
@@ -124,6 +148,25 @@ function NewBrewsPage({ modelsList, firstName, tokensAvailable }) {
 
     runSQLQuery(promptMessage);
     console.log("NewBrewersPage.jsx: after executeQueries. Value of query \n", sqlResults);
+  };
+
+  const handleSaveResults = (e) => {
+    //e.preventDefault();
+    console.log("NewBrewersPage.jsx: Summarize results \n");
+    // Standardize this sucker - high priority
+    const promptMessage = {
+      userId: userId,
+      provider: provider,
+      model: modelName,
+      persona: personaName,
+      promptQuery: message,
+      instructions: modelsList.personas.find((persona) => persona.assistant === personaName)?.instructions,
+      sourceDB: modelsList.personas.find((persona) => persona.assistant === personaName)?.sourceDB,
+      maxTokens: tokensAvailable,
+      sqlStatement: responseSQL,
+      sqlResults: sqlResults,
+    };
+    runSaveResults(promptMessage, responseSQL);
   };
 
   const handleSummarizeResults = (e) => {
@@ -238,14 +281,14 @@ function NewBrewsPage({ modelsList, firstName, tokensAvailable }) {
         {/* Red border */}
         {/* form to submit prompt */}
       </div>
-      <div className="rounded-xl shadow-md items-center space-y-4 border border-base-300 p-2 mt-4">
-        {/* Two areas to display the prompt and sql results */}
-        <div className="flex flex-col md:flex-row gap-8">
-          <div className="flex flex-col md:w-1/3">
-            <div className="flex flex-col md:flex-row justify-between px-4">
-              <div className="text-lg font-semibold">SQL Query</div>
-              <button className="btn btn-sm btn-primary min-w-32" type="reset" onClick={(e) => handleRunQuery()}>
-                {isPending_SQL ? "Please wait" : "Run Query"}
+      {/* Two areas to display the query and sql results - Part1*/}
+      <div className="rounded-xl shadow-md items-center border border-b-2 border-base-300 p-2 mt-4">
+        <div className="flex flex-col">
+          <div className="flex flex-col md:flex-row border-b-2 border-base py-2">
+            <div className="flex flex-col md:w-1/6">
+              <h2 className="text-lg font-semibold px-4">SQL Query</h2>
+              <button className="btn btn-sm btn-primary mt-4" type="button" onClick={(e) => handleRunQuery()}>
+                {isPending_SQL ? "please wait" : "Run Query"}
               </button>
             </div>
 
@@ -260,6 +303,9 @@ function NewBrewsPage({ modelsList, firstName, tokensAvailable }) {
             <div className="flex flex-col md:flex-row">
               <div className="flex flex-col md:w-1/6">
                 <h2 className="text-lg font-semibold px-4">SQL Results</h2>
+                <button className="btn btn-primary btn-sm mt-4" type="button" onClick={(e) => handleSaveResults()}>
+                  Save
+                </button>
                 <button className="btn btn-primary btn-sm mt-4" type="button" onClick={(e) => handleSummarizeResults()}>
                   Summarize
                 </button>

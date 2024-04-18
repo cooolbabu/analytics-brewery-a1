@@ -43,19 +43,19 @@ export async function sayHello(message) {
 }
 
 /**
- * Generates a prompt response for testCase1.
+ * Generates a prompt response.
  *
  * @param {Object} message - The message to be logged.
  * @returns {Promise<string>} The response message from the server.
  */
-export async function generatePromptResponseTestCase1(message) {
+export async function generatePromptResponse(message) {
   // console.log("Hello from the server: ", message);
-  console.log("actions.js-generatePromptResponseTestCase1: Provider: ", message.provider);
-  console.log("actions.js-generatePromptResponseTestCase1: Model: ", message.model);
-  console.log("actions.js-generatePromptResponseTestCase1: Persona: ", message.persona);
-  console.log("actions.js-generatePromptResponseTestCase1: Instructions: ", message.instructions);
-  console.log("actions.js-generatePromptResponseTestCase1: Query: ", message.query);
-  console.log("actions.js-generatePromptResponseTestCase1: MaxTokens: ", message.maxTokens);
+  console.log("actions.js-generatePromptResponse: Provider: ", message.provider);
+  console.log("actions.js-generatePromptResponse: Model: ", message.model);
+  console.log("actions.js-generatePromptResponse: Persona: ", message.persona);
+  console.log("actions.js-generatePromptResponse: Instructions: ", message.instructions);
+  console.log("actions.js-generatePromptResponse: Query: ", message.query);
+  console.log("actions.js-generatePromptResponse: MaxTokens: ", message.maxTokens);
 
   // callOpenAI fucntion from callOpenAI.js
   let response = "";
@@ -65,10 +65,13 @@ export async function generatePromptResponseTestCase1(message) {
     response = await callMistral(message.model, message.persona, message.instructions, message.query);
   }
 
-  console.log("actions.js-generatePromptResponseTestCase1: ", response);
+  console.log("actions.js-generatePromptResponse: ", response);
   return response;
 }
 
+export async function savePromptQueryResults(results) {
+  console.log("actions.js-savePromptQueryResults: ", results);
+}
 /**
  * A router function that calls appropriate functions to execute queries.
  *
@@ -93,6 +96,44 @@ export async function executeQueries(message) {
   } catch (error) {
     console.log(error);
     return { error: "getCustomerInformation()::Something went wrong" };
+  }
+}
+
+export async function getAllABPrompts() {
+  const sqlStatement = "SELECT * FROM ab_user_prompts LIMIT 25";
+  console.log("actions.js-executeQuery: SQL Query: ", sqlStatement);
+
+  try {
+    //await new Promise((resolve) => setTimeout(resolve, 3000)); // Add a 3-second delay
+
+    const client = supabaseClientPool;
+    //console.log("getCustomerInformation: client", client);
+    const sqlResult = await client.query(sqlStatement);
+    console.log("getAllABPrompts: sqlResult.rows ", sqlResult.rows);
+
+    return sqlResult.rows;
+  } catch (error) {
+    console.log(error);
+    return { error: "getAllABPrompts()::Something went wrong" };
+  }
+}
+
+export async function getABPromptsById(id) {
+  const sqlStatement = "SELECT prompt_id, user_id, provider, model, persona, prompt_msg FROM ab_user_prompts LIMIT 25";
+  console.log("actions.js-getABPromptsById: SQL Query: ", sqlStatement);
+
+  try {
+    //await new Promise((resolve) => setTimeout(resolve, 3000)); // Add a 3-second delay
+
+    const client = supabaseClientPool;
+    //console.log("getCustomerInformation: client", client);
+    const sqlResult = await client.query(sqlStatement);
+    console.log("getABPromptsById: sqlResult.rows ", sqlResult.rows);
+
+    return sqlResult.rows;
+  } catch (error) {
+    console.log(error);
+    return { error: "getABPromptsById()::Something went wrong" };
   }
 }
 
