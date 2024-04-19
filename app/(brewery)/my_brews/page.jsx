@@ -1,7 +1,7 @@
 function FreshBrews() {
   return (
     <div>
-      <h1>Fresh Brews</h1>
+      <h1>My Brews</h1>
     </div>
   );
 }

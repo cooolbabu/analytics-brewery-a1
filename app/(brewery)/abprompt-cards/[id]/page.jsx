@@ -3,7 +3,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 
 async function SingleABPromptPage({ params }) {
-  console.log("[page.jsx] SingleTourPage: ", params);
+  console.log("[page.jsx] SingleABPromptPage: ", params);
   const prompt_details = await getABPromptsById(params.id);
   if (!prompt_details) {
     redirect("/abprompt-cards");

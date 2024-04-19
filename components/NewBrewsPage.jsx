@@ -37,9 +37,7 @@ function NewBrewsPage({ modelsList, firstName, tokensAvailable }) {
   const [modelName, setModelName] = useState("Models");
   const [personaName, setPersonaName] = useState("Personas");
   const [message, setMessage] = useState("Type your prompt here ...");
-  const [responseSQL, setResponseSQL] = useState(
-    'SELECT * FROM "Customer" WHERE "FirstName" = \'Taylor\' OR "LastName" = \'Taylor\''
-  );
+  const [responseSQL, setResponseSQL] = useState('SELECT * FROM "Customer" limit 3;');
 
   const [sqlResults, setSQLResults] = useState([]);
   const [summaryMsg, setSummaryMsg] = useState("Descriptive summarization displayed here...");
@@ -60,7 +58,7 @@ function NewBrewsPage({ modelsList, firstName, tokensAvailable }) {
   // Use mutation function to generate a SQL query from the prompt
   const {
     mutate: runPromptQuery, // suffixing PQ
-    isPending_PQ,
+    isPending: isPending_PQ,
     data: data_PQ,
   } = useMutation({
     mutationFn: (query) => generatePromptResponse(query),
@@ -79,7 +77,7 @@ function NewBrewsPage({ modelsList, firstName, tokensAvailable }) {
   // Use mutation function to save the result.
   const {
     mutate: runSaveResults, // suffixing SR
-    isPending_SR,
+    isPending: isPending_SR,
     data: data_SR,
   } = useMutation({
     mutationFn: (results) => savePromptQueryResults(results),
@@ -96,7 +94,7 @@ function NewBrewsPage({ modelsList, firstName, tokensAvailable }) {
   // Use mutation function to run a SQL query
   const {
     mutate: runSQLQuery, // suffixing SQL
-    isPending_SQL,
+    isPending: isPending_SQL,
     data: data_SQL,
   } = useMutation({
     mutationFn: (query) => executeQueries(query),
@@ -114,7 +112,7 @@ function NewBrewsPage({ modelsList, firstName, tokensAvailable }) {
   // Use mutation function to run a summarize query results
   const {
     mutate: runQueryresultSummarization, // suffixing QRS
-    isPending_QRS,
+    isPending: isPending_QRS,
     data: data_QRS,
   } = useMutation({
     mutationFn: (query) => executeQuerySummarization(query),
@@ -268,8 +266,8 @@ function NewBrewsPage({ modelsList, firstName, tokensAvailable }) {
                 onChange={(e) => setMessage(e.target.value)}
               ></textarea>
               <div className="m-2 space-x-4">
-                <button className="btn btn-sm btn-primary min-w-32" type="submit">
-                  {isPending_PQ ? "Please wait" : "Submit"}
+                <button className="btn btn-sm btn-primary min-w-32" type="submit" disabled={isPending_PQ}>
+                  {isPending_PQ ? "Please wait..." : "Submit"}
                 </button>
                 <button className="btn btn-sm min-w-28" type="reset">
                   Reset
@@ -287,8 +285,13 @@ function NewBrewsPage({ modelsList, firstName, tokensAvailable }) {
           <div className="flex flex-col md:flex-row border-b-2 border-base py-2">
             <div className="flex flex-col md:w-1/6">
               <h2 className="text-lg font-semibold px-4">SQL Query</h2>
-              <button className="btn btn-sm btn-primary mt-4" type="button" onClick={(e) => handleRunQuery()}>
-                {isPending_SQL ? "please wait" : "Run Query"}
+              <button
+                className="btn btn-sm btn-primary mt-4"
+                type="button"
+                onClick={(e) => handleRunQuery()}
+                disabled={isPending_SQL}
+              >
+                {isPending_SQL ? "Please wait..." : "Run Query"}
               </button>
             </div>
 

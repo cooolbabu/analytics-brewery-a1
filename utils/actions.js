@@ -3,7 +3,12 @@ import OpenAI from "openai";
 import formatter from "prettier";
 import prisma from "./db";
 import { callOpenAI, generateSQLResultsSummarization } from "./callOpenAI";
-import { supabaseClientPool } from "@/lib/db";
+import {
+  supabaseClientPool,
+  displayEnvironmentVariables,
+  QueryDataFromSupabase,
+  InsertRowSupabase,
+} from "@/utils/dbutils/db_supabase";
 import { callMistral } from "./mistral/callMistral";
 
 const openai = new OpenAI({
@@ -69,49 +74,56 @@ export async function generatePromptResponse(message) {
   return response;
 }
 
+/**
+ * Saves the results of a prompt query.
+ *
+ * @param {any} results - The results of the prompt query.
+ * @returns {Promise<void>} - A promise that resolves when the results are saved.
+ */
 export async function savePromptQueryResults(results) {
   console.log("actions.js-savePromptQueryResults: ", results);
+  const queryStr =
+    "INSERT INTO ab_user_prompts (user_id, provider, model, persona, prompt_msg) VALUES ($1, $2, $3, $4, $5)";
+  const values = [results.userId, results.provider, results.model, results.persona, results.promptQuery];
+  InsertRowSupabase(queryStr, values);
 }
 /**
  * A router function that calls appropriate functions to execute queries.
  *
  * @param {Object} messages
  * @param {String} sqlQuery
- * @returns {Promise<string>} sqlResults
+ * @returns {Promise<string>} queryResults - The response message from the server.
+ * QueryDataFromSupabase
  */
 export async function executeQueries(message) {
-  console.log("actions.js-executeQuery: Persona: ", message.persona);
-  console.log("actions.js-executeQuery: SQL Query: ", message.sqlStatement);
+  console.log("actions.js-executeQueries: Persona: ", message.persona);
+  console.log("actions.js-executeQueries: SQL Query: ", message.sqlStatement);
 
   try {
     //await new Promise((resolve) => setTimeout(resolve, 3000)); // Add a 3-second delay
 
-    const client = supabaseClientPool;
+    // const client = supabaseClientPool;
     //console.log("getCustomerInformation: client", client);
-    const sqlResult = await client.query(message.sqlStatement);
-    console.log("getCustomerInformation: sqlResult.rows ", sqlResult.rows);
-    const jsonObject = JSON.stringify(sqlResult.rows);
-    console.log("getCustomerInformation: jsonObject", jsonObject);
-    return sqlResult.rows;
+    const queryResults = await QueryDataFromSupabase(message.sqlStatement, "sqlRows");
+
+    console.log("executeQueries: sqlResult ", queryResults);
+    return queryResults;
   } catch (error) {
     console.log(error);
-    return { error: "getCustomerInformation()::Something went wrong" };
+    return { error: "executeQueries()::Something went wrong" };
   }
 }
 
 export async function getAllABPrompts() {
   const sqlStatement = "SELECT * FROM ab_user_prompts LIMIT 25";
-  console.log("actions.js-executeQuery: SQL Query: ", sqlStatement);
+  // console.log("actions.js-executeQuery: SQL Query: ", sqlStatement);
 
   try {
     //await new Promise((resolve) => setTimeout(resolve, 3000)); // Add a 3-second delay
+    const queryResult = await QueryDataFromSupabase(sqlStatement, "sqlRows");
+    // console.log("getAllABPrompts: sqlResult ", queryResult);
 
-    const client = supabaseClientPool;
-    //console.log("getCustomerInformation: client", client);
-    const sqlResult = await client.query(sqlStatement);
-    console.log("getAllABPrompts: sqlResult.rows ", sqlResult.rows);
-
-    return sqlResult.rows;
+    return queryResult;
   } catch (error) {
     console.log(error);
     return { error: "getAllABPrompts()::Something went wrong" };
@@ -125,12 +137,10 @@ export async function getABPromptsById(id) {
   try {
     //await new Promise((resolve) => setTimeout(resolve, 3000)); // Add a 3-second delay
 
-    const client = supabaseClientPool;
-    //console.log("getCustomerInformation: client", client);
-    const sqlResult = await client.query(sqlStatement);
-    console.log("getABPromptsById: sqlResult.rows ", sqlResult.rows);
+    const queryResult = await QueryDataFromSupabase(message.sqlStatement, "sqlRows");
+    console.log("getAllABPrompts: sqlResult ", queryResult);
 
-    return sqlResult.rows;
+    return queryResult;
   } catch (error) {
     console.log(error);
     return { error: "getABPromptsById()::Something went wrong" };
@@ -243,66 +253,3 @@ export async function generateTourResponse({ city, country }) {
 //   console.log("Returning from generateChatResponse");
 //   return "awesome";
 // };
-
-export async function getExistingTour({ city, country }) {
-  console.log("getExistingTour invoked");
-  return prisma.tour.findUnique({
-    where: {
-      city_country: {
-        city,
-        country,
-      },
-    },
-  });
-}
-
-export async function createNewTour(tour) {
-  console.log("createNewTour invoked");
-  return prisma.tour.create({ data: tour });
-}
-
-export async function getAllTours(searchTerm) {
-  console.log("getAllTours invoked");
-
-  try {
-    let whereCondition = {};
-    if (searchTerm && searchTerm.trim() !== "") {
-      whereCondition = {
-        city: {
-          contains: searchTerm,
-        },
-        country: {
-          contains: searchTerm,
-        },
-      };
-    }
-
-    const tours = await prisma.tour.findMany({
-      where: whereCondition,
-      orderBy: {
-        city: "asc",
-      },
-    });
-
-    return tours;
-  } catch (error) {
-    console.log(error);
-    return null;
-  }
-}
-export async function getSingleTour(id) {
-  console.log("getSingleTour invoked");
-
-  try {
-    const tour = await prisma.tour.findUnique({
-      where: {
-        id,
-      },
-    });
-
-    return tour;
-  } catch (error) {
-    console.log(error);
-    return null;
-  }
-}
