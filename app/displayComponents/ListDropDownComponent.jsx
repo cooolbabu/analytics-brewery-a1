@@ -10,7 +10,9 @@ const ListDropDownComponent = ({ defaultValue, currentValue, options, onOptionSe
     onOptionSelect(selectedValue);
   };
 
-  console.log("ListDropDownComponent: SelectedOption: ", selectedOption);
+  // console.log("ListDropDownComponent: SelectedOption: ", selectedOption);
+
+  if (!options) return null;
 
   return (
     <div>

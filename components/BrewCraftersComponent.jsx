@@ -10,19 +10,23 @@ import { marked } from "marked";
 function BrewCraftersComponent({ modelsList, userProfile }) {
   const [message, setMessage] = useState("Say Hello ...");
   const [instructions, setInstructions] = useState("You are a greeter. Say something nice ...");
-  const [displayMessage, setDisplayMessage] = useState("AI response will be displayed here ...");
   const [provider, setProvider] = useState("Providers");
   const [modelName, setModelName] = useState("Models");
   const [personaName, setPersonaName] = useState("Personas");
+  const [selectedPrompt, setSelectedPrompt] = useState("Pre-defined prompts");
+  const [promptTemplate, setPromptTemplate] = useState("Type your prompt template here ..");
+  const [promptQuery, setPromptQuery] = useState("Enter your query here ...");
+  const [displayMessage, setDisplayMessage] = useState("AI response will be displayed here ...");
+
   const providerNames = modelsList.providers.map((provider) => provider.name);
   const personas = modelsList.personas.map((persona) => persona.assistant);
   const providerModels = listModelsByProvider(modelsList, provider);
 
-  console.log(
-    "BrewCraftersComponent.jsx: ----------------------------Begin------------------------------- ",
-    modelsList,
-    userProfile
-  );
+  // console.log(
+  //   "BrewCraftersComponent.jsx: ----------------------------Begin------------------------------- ",
+  //   modelsList,
+  //   userProfile
+  // );
 
   // console.log(
   //   "BrewCraftersComponent.jsx: ----------------------------Variables---------------------------- ",
@@ -30,23 +34,48 @@ function BrewCraftersComponent({ modelsList, userProfile }) {
   //   personas
   // );
 
-  //   Event handlers -begin
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    console.log("BrewCrafterComponent.jsx: Before mutate. Handle Submit clicked\n", message + " " + instructions);
-    mistralChatInteraction(instructions, message);
-  };
-
   // Event handlers -end
   // Mutations -begin
   // Use mutation function to run a summarize query results
+  const saveCraftersPromptResultsEvent = (e) => {
+    e.preventDefault();
+    console.log("BrewCraftersComponent.jsx: Save clicked\n", e.target.value);
+    saveCraftersPromptResultsMutation();
+  };
+
+  const {
+    mutate: saveCraftersPromptResultsMutation, // suffixing QRS
+    isPending: isPending_CPR,
+    data: data_CPR,
+  } = useMutation({
+    mutationFn: (promptTemplate) => saveCraftersPromptResultsMutation("", "", instructions, promptMessage),
+    onSuccess: (data) => {
+      if (!data) {
+        toast.error("Something went wrong");
+        return;
+      }
+      console.log("BrewCraftersComponent.jsx-Mutation: before: ", data);
+      setDisplayMessage(marked(data));
+      console.log("BrewCraftersComponent.jsx-Mutation: after: ", displayMessage);
+    },
+  });
+
+  //   Event handlers -begin
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    console.log(
+      "BrewCrafterComponent.jsx: Before mutate. Handle Submit clicked\n",
+      modelName + " " + personaName + " " + promptTemplate + " " + promptQuery
+    );
+    mistralChatInteraction({ modelName, personaName, promptTemplate, promptQuery });
+  };
 
   const {
     mutate: mistralChatInteraction, // suffixing QRS
-    isPending_SH,
-    data: data_SH,
+    isPending: isPendingMCI,
+    data: dataMCI,
   } = useMutation({
-    mutationFn: (instructions, promptMessage) => GenerateChatResponse("", "", instructions, promptMessage),
+    mutationFn: (chatParams) => GenerateChatResponse(chatParams),
     onSuccess: (data) => {
       if (!data) {
         toast.error("Something went wrong");
@@ -101,24 +130,35 @@ function BrewCraftersComponent({ modelsList, userProfile }) {
 
       {/* Form for prompt submission -begin */}
       <form onSubmit={handleSubmit}>
+        <div className="md:w-1/4">
+          {/* <ListDropdownComponent
+            defaultValue="Pre-defined prompts"
+            currentValue={selectedPrompt}
+            options="['Prompt 1', 'Prompt 2', 'Prompt 3']"
+            onOptionSelect={(option) => setSelectedPrompt(option)}
+          /> */}
+        </div>
         <div className="flex flex-col">
-          <div className="flex flex-row gap-2">
+          <div className="flex flex-col md:flex-row gap-2">
             <textarea
-              className="textarea textarea-bordered w-1/2"
+              className="textarea textarea-bordered md:w-1/2 text-xs"
               rows="3"
-              placeholder="Say Hello..."
-              onChange={(e) => setMessage(e.target.value)}
+              placeholder="Enter your prompt template here ..."
+              onChange={(e) => setPromptTemplate(e.target.value)}
             ></textarea>
             <textarea
-              className="textarea textarea-bordered w-1/2"
+              className="textarea textarea-bordered md:w-1/2"
               rows="3"
-              placeholder="What style of greeting should I use?"
-              onChange={(e) => setInstructions(e.target.value)}
+              placeholder="Enter your prompt query here ..."
+              onChange={(e) => setPromptQuery(e.target.value)}
             ></textarea>
           </div>
           <div className="m-2 space-x-4">
-            <button className="btn btn-sm btn-primary min-w-28" type="submit">
-              Submit
+            <button className="btn btn-sm btn-primary min-w-28" type="submit" disabled={isPendingMCI}>
+              {isPendingMCI ? "Processing ..." : "Submit"}
+            </button>
+            <button className="btn btn-info btn-sm min-w-28" type="button" onClick={saveCraftersPromptResultsEvent}>
+              Save
             </button>
             <button className="btn btn-sm min-w-28" type="reset">
               Reset

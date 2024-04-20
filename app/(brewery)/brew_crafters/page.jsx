@@ -9,11 +9,11 @@ async function BrewCraftersPage() {
   const userProfile = await getUserProfile(user.emailAddresses[0].emailAddress);
   const modelsList = await getProviderModels();
 
-  console.log("Brews CraftersPage ====");
-  console.log("Email address: ", user.emailAddresses[0].emailAddress);
-  console.log("First Name: ", user.firstName, "Last Name: ", user.lastName);
-  console.log("ImageUrl: ", user.imageUrl);
-  console.log("Models list: ", modelsList);
+  // console.log("Brews CraftersPage ====");
+  // console.log("Email address: ", user.emailAddresses[0].emailAddress);
+  // console.log("First Name: ", user.firstName, "Last Name: ", user.lastName);
+  // console.log("ImageUrl: ", user.imageUrl);
+  // console.log("Models list: ", modelsList);
 
   const queryClient = new QueryClient();
   return (

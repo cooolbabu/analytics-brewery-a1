@@ -3,12 +3,7 @@ import OpenAI from "openai";
 import formatter from "prettier";
 import prisma from "./db";
 import { callOpenAI, generateSQLResultsSummarization } from "./callOpenAI";
-import {
-  supabaseClientPool,
-  displayEnvironmentVariables,
-  QueryDataFromSupabase,
-  InsertRowSupabase,
-} from "@/utils/dbutils/db_supabase";
+import { QueryDataFromSupabase, InsertRowSupabase } from "@/utils/dbutils/db_supabase";
 import { callMistral } from "./mistral/callMistral";
 
 const openai = new OpenAI({

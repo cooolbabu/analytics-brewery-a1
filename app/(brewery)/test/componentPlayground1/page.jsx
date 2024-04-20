@@ -1,7 +1,15 @@
+/**
+ * Testing for Brew Crafters
+ *
+ */
+
 function ComponentPlayground1() {
   return (
     <div className="border rounded-lg border-slate-800">
-      <h2>Hello Playground - Notice the margin from layout</h2>
+      <div>
+        <h2>Palgroud</h2>
+      </div>
+      <h2 className="mt-8">Hello Playground - Notice the margin from layout</h2>
 
       <div className="flex flex-col gap-2 md:flex-row">
         <div className="bg-pink-300 rounded-lg md:w-1/3">01 - flex flex-col gap-2 md:flex-row</div>

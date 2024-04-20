@@ -82,14 +82,14 @@ async function loadPersonaAndGenerateChatResponse(modelName, persona, instructio
  * Generates a chat response using the specified model.
  *
  * @param {string} modelName - The name of the model to use for generating the chat response.
- * @param {string} persona - The persona for the chat response.
- * @param {string} instructions - The instructions for the chat response.
- * @param {string} promptMessage - The prompt message for the chat response.
+ * @param {string} personaName - The persona for the chat response.
+ * @param {string} promptTemplate - The instructions for the chat response.
+ * @param {string} promptQuery - The prompt message for the chat response.
  * @returns {Promise<string>} The generated chat response.
  */
-export async function GenerateChatResponse(modelName, persona, instructions, promptMessage) {
-  let response = "Something went wrong";
-  let chatResponse = null;
+
+export async function GenerateChatResponse({ modelName, persona, promptTemplate, promptQuery }) {
+  let chatResponse = "";
 
   try {
     const model = "mistral-medium-latest";
@@ -97,18 +97,8 @@ export async function GenerateChatResponse(modelName, persona, instructions, pro
 
     const filePath = path.join("./", "assets", "ChinookDBER.txt");
     const fileContent = fs.readFileSync(filePath, "utf-8");
-    // console.log("\ncallMistral.js-GenerateChatResponse: ", instructions + "\n" + fileContent);
 
-    // chatResponse = await client.chat({
-    //   messages: [
-    //     { role: "system", content: instructions },
-    //     { role: "user", content: promptMessage },
-    //   ],
-    //   model: modelName,
-    //   temperature: 0,
-    // })
-
-    let chatMessage = instructions + fileContent + "\n Please answer the following question: \n" + promptMessage;
+    let chatMessage = promptTemplate + "\n" + fileContent + "\n" + promptQuery;
     console.log("\n\nChat message to Mistral: ", chatMessage);
     chatResponse = await client.chat({
       messages: [{ role: "user", content: chatMessage }],
@@ -130,8 +120,9 @@ export async function GenerateChatResponse(modelName, persona, instructions, pro
   // // //console.log(JSON.parse(response.choices[0].message.content).query);
   // // console.log("Returning from generateChatResponse");
 
-  console.log("Response from Mistral -------------------------------------\n", chatResponse.choices[0].message.content);
+  // console.log("Response from Mistral -------------------------------------\n", chatResponse.choices[0].message.content);
   let chatResponseStr = chatResponse.choices[0].message.content;
+  console.log("chatResponseStr: \n", chatResponseStr);
 
   // Remove unnecessary escape characters before underscores
   chatResponseStr = chatResponseStr.replace(/^```json|```$/g, "");
