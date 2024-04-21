@@ -3,6 +3,7 @@ import { HydrationBoundary, QueryClient, dehydrate } from "@tanstack/react-query
 import BrewCraftersComponent from "@/components/BrewCraftersComponent";
 import { getUserProfile, getProviderModels } from "@/lib/userProfile";
 import { currentUser } from "@clerk/nextjs";
+import { getAllPromptTemplates } from "@/utils/actions";
 
 async function BrewCraftersPage() {
   const user = await currentUser();
@@ -16,6 +17,11 @@ async function BrewCraftersPage() {
   // console.log("Models list: ", modelsList);
 
   const queryClient = new QueryClient();
+
+  await queryClient.prefetchQuery({
+    queryKey: ["promptTemplates"],
+    queryFn: () => getAllPromptTemplates(),
+  });
   return (
     <div>
       <HydrationBoundary state={dehydrate(queryClient)}>

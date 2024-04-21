@@ -3,9 +3,11 @@
 import ListDropdownComponent from "@/app/displayComponents/ListDropDownComponent";
 import { listModelsByProvider } from "@/lib/LLMProvidersUtils";
 import { useState } from "react";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { GenerateChatResponse } from "@/utils/mistral/callMistral";
 import { marked } from "marked";
+import { SaveCraftersPromptResults, getAllPromptTemplates } from "@/utils/actions";
+import { useAuth } from "@clerk/nextjs";
 
 function BrewCraftersComponent({ modelsList, userProfile }) {
   const [message, setMessage] = useState("Say Hello ...");
@@ -15,12 +17,24 @@ function BrewCraftersComponent({ modelsList, userProfile }) {
   const [personaName, setPersonaName] = useState("Personas");
   const [selectedPrompt, setSelectedPrompt] = useState("Pre-defined prompts");
   const [promptTemplate, setPromptTemplate] = useState("Type your prompt template here ..");
+  const [promptTemplateId, setPromptTemplateId] = useState("");
   const [promptQuery, setPromptQuery] = useState("Enter your query here ...");
   const [displayMessage, setDisplayMessage] = useState("AI response will be displayed here ...");
 
   const providerNames = modelsList.providers.map((provider) => provider.name);
   const personas = modelsList.personas.map((persona) => persona.assistant);
   const providerModels = listModelsByProvider(modelsList, provider);
+
+  const { userId } = useAuth();
+
+  const [searchValue, setSearchValue] = useState("");
+
+  const { data: pTemplatesData, isPending: isPendingTD } = useQuery({
+    queryKey: ["promptTemplates", { searchValue, userId }],
+    queryFn: () => getAllPromptTemplates({ searchValue, userId }),
+  });
+
+  console.log("BrewCraftersComponent.jsx: Prompt Templates: ", pTemplatesData);
 
   // console.log(
   //   "BrewCraftersComponent.jsx: ----------------------------Begin------------------------------- ",
@@ -37,10 +51,17 @@ function BrewCraftersComponent({ modelsList, userProfile }) {
   // Event handlers -end
   // Mutations -begin
   // Use mutation function to run a summarize query results
+
+  const saveAsCraftersPromptResultsEvent = (e) => {
+    e.preventDefault();
+    console.log("BrewCraftersComponent.jsx: SaveAs clicked\n", e.target.value);
+    saveCraftersPromptResultsMutation({ promptTemplate, userId });
+  };
+
   const saveCraftersPromptResultsEvent = (e) => {
     e.preventDefault();
     console.log("BrewCraftersComponent.jsx: Save clicked\n", e.target.value);
-    saveCraftersPromptResultsMutation();
+    saveCraftersPromptResultsMutation({ promptTemplate, userId, promptTemplateId });
   };
 
   const {
@@ -48,7 +69,7 @@ function BrewCraftersComponent({ modelsList, userProfile }) {
     isPending: isPending_CPR,
     data: data_CPR,
   } = useMutation({
-    mutationFn: (promptTemplate) => saveCraftersPromptResultsMutation("", "", instructions, promptMessage),
+    mutationFn: (saveParams) => SaveCraftersPromptResults(saveParams),
     onSuccess: (data) => {
       if (!data) {
         toast.error("Something went wrong");
@@ -125,7 +146,22 @@ function BrewCraftersComponent({ modelsList, userProfile }) {
             onOptionSelect={(option) => setPersonaName(option)}
           />
         </div>
-        <input type="text" placeholder="Bring your own API Key" className="input md:w-1/4" />
+        <div className="md:w-1/4">
+          <input
+            type="text"
+            placeholder="Prompt Templates here"
+            name="search"
+            value={searchValue}
+            onChange={(e) => setSearchValue(e.target.value)}
+            required
+          />
+          {/* <ListDropdownComponent
+            defaultValue="Prompt Templates"
+            currentValue={promptTemplate}
+            options={promptTemplates}
+            onOptionSelect={(option) => setPersonaName(option)}
+          /> */}
+        </div>
       </div>
 
       {/* Form for prompt submission -begin */}
@@ -153,12 +189,18 @@ function BrewCraftersComponent({ modelsList, userProfile }) {
               onChange={(e) => setPromptQuery(e.target.value)}
             ></textarea>
           </div>
-          <div className="m-2 space-x-4">
+          <div className="m-4 space-x-4">
             <button className="btn btn-sm btn-primary min-w-28" type="submit" disabled={isPendingMCI}>
               {isPendingMCI ? "Processing ..." : "Submit"}
             </button>
             <button className="btn btn-info btn-sm min-w-28" type="button" onClick={saveCraftersPromptResultsEvent}>
+              Load Prompt Template
+            </button>
+            <button className="btn btn-info btn-sm min-w-28" type="button" onClick={saveCraftersPromptResultsEvent}>
               Save
+            </button>
+            <button className="btn btn-info btn-sm min-w-28" type="button" onClick={saveAsCraftersPromptResultsEvent}>
+              Save As New
             </button>
             <button className="btn btn-sm min-w-28" type="reset">
               Reset

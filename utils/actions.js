@@ -111,7 +111,7 @@ export async function executeQueries(message) {
 
 export async function getAllABPrompts() {
   const sqlStatement = "SELECT * FROM ab_user_prompts LIMIT 25";
-  // console.log("actions.js-executeQuery: SQL Query: ", sqlStatement);
+  console.log("actions.js-executeQuery: SQL Query: ", sqlStatement);
 
   try {
     //await new Promise((resolve) => setTimeout(resolve, 3000)); // Add a 3-second delay
@@ -248,3 +248,52 @@ export async function generateTourResponse({ city, country }) {
 //   console.log("Returning from generateChatResponse");
 //   return "awesome";
 // };
+
+/**
+ * Saves Crafter's prompt templates
+ *
+ * @param {Object} options - The options for saving the prompt results.
+ * @param {string} options.promptTemplate - The prompt template to save.
+ * @param {string} options.userId - The ID of the user.
+ * @returns {Promise<void>} - A promise that resolves when the prompt results are saved.
+ */
+export async function SaveCraftersPromptResults({ promptTemplate, userId, promptTemplateId }) {
+  console.log("actions.js: saveCraftersPromptResults invoked: ", promptTemplate);
+
+  let queryStr = "";
+  let values = [];
+
+  if (promptTemplateId === "") {
+    queryStr = "INSERT INTO ab_prompt_template (prompt_template, user_id) VALUES ($1, $2);";
+    values = [promptTemplate, userId];
+  } else {
+    queryStr =
+      "INSERT INTO ab_prompt_template (prompt_template, user_id, prompt_template_id) VALUES ($1, $2, $3) ON CONFLICT (prompt_template_id) DO UPDATE SET prompt_template = $1 ";
+    values = [promptTemplate, userId, promptTemplateId];
+  }
+
+  InsertRowSupabase(queryStr, values);
+}
+
+export const getAllPromptTemplates = async ({ searchValue, userId }) => {
+  console.log("actions.js-getAllPromptTemplates: userId: ", userId, " searchValue: ", searchValue);
+  const sqlResult = await QueryDataFromSupabase(
+    `SELECT * FROM ab_prompt_template WHERE user_id = '%${userId}%' OR prompt_template ILIKE '%${searchValue}%'`
+  );
+  return sqlResult;
+};
+
+export async function getAllPromptTemplates2(userId) {
+  const sqlStatement = "SELECT * FROM ab_prompt_template WHERE user_id = $1";
+  console.log("actions.js-getAllPromptTemplates: SQL Query: ", sqlStatement);
+
+  try {
+    const queryResult = await QueryDataFromSupabase(sqlStatement, "sqlRows", [userId]);
+    console.log("getAllPromptTemplates: sqlResult ", queryResult);
+
+    return queryResult;
+  } catch (error) {
+    console.log(error);
+    return { error: "getAllPromptTemplates()::Something went wrong" };
+  }
+}
