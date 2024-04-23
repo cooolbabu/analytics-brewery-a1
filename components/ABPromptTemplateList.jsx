@@ -6,7 +6,7 @@ import { useState } from "react";
 import { useDebounce } from "use-debounce";
 import ABPromptTemplateItems from "./ABPromptTemplateItems";
 
-function ABPromptTemplateList() {
+function ABPromptTemplateList({ onPromptTemplateSelection }) {
   const [searchValue, setSearchValue] = useState("");
   const [debouncedSearchValue] = useDebounce(searchValue, 2000);
   const { userId } = useAuth();
@@ -16,34 +16,52 @@ function ABPromptTemplateList() {
   });
 
   //   setSearchValue("Another");
-  console.log("ABPromptTemplateList: data", data);
-  console.log("ABPromptTemplateList: searchvalue", searchValue, debouncedSearchValue);
+  //console.log("ABPromptTemplateList: data", data);
+  //console.log("ABPromptTemplateList: searchvalue", searchValue, debouncedSearchValue);
+
+  const handleOptionSelection = (value) => {
+    // const selectedValue = event.target.value;
+    // console.log("Selected event: ", event);
+    //console.log("Selected Value: ", value);
+    //console.log("Selected data: ", data);
+    const selectedPromptData = data.filter((item) => item.prompt_template_id === value);
+    //console.log("selectedPromptData : ", selectedPromptData[0]); // Prompt template id is unique
+    // onPromptTemplateSelection(selectedPromptData);
+
+    if (typeof onPromptTemplateSelection === "function") {
+      onPromptTemplateSelection(selectedPromptData[0]);
+    } else {
+      console.error("onPromptTemplateSelection is not a function!", onPromptTemplateSelection);
+    }
+  };
+
   return (
     <div>
-      <h2 className="mb-4">ABPromptTemplateList</h2>
-      <form className="max-w-2xl mb-12">
-        <div className="join w-full">
-          <input
-            type="text"
-            placeholder="Enter Prompt Template here.."
-            className="input input-bordered join-item w-full"
-            name="search"
-            value={searchValue}
-            onChange={(e) => setSearchValue(e.target.value)}
-            required
-          />
-          <button
-            className="btn btn-primary join-item"
-            type="button"
-            disabled={isPending}
-            onClick={() => setSearchValue("")}
-          >
-            {isPending ? "Please wait..." : "Reset"}
-          </button>
-        </div>
-      </form>
+      <div className="join">
+        <input
+          type="text"
+          placeholder="Enter Prompt Template details to search..."
+          className="input input-bordered join-item min-w-full text-sm"
+          name="search"
+          value={searchValue}
+          onChange={(e) => setSearchValue(e.target.value)}
+          required
+        />
+        <button
+          className="btn btn-primary join-item"
+          type="button"
+          disabled={isPending}
+          onClick={() => setSearchValue("")}
+        >
+          {isPending ? "Please wait..." : "Reset"}
+        </button>
+      </div>
 
-      {isPending ? <span className=" loading"></span> : <ABPromptTemplateItems data={data} />}
+      {isPending ? (
+        <span className="loading"></span>
+      ) : (
+        <ABPromptTemplateItems data={data} handleOptionSelection={handleOptionSelection} />
+      )}
     </div>
   );
 }

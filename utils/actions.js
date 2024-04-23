@@ -257,19 +257,26 @@ export async function generateTourResponse({ city, country }) {
  * @param {string} options.userId - The ID of the user.
  * @returns {Promise<void>} - A promise that resolves when the prompt results are saved.
  */
-export async function SaveCraftersPromptResults({ promptTemplate, userId, promptTemplateId }) {
-  console.log("actions.js: saveCraftersPromptResults invoked: ", promptTemplate);
+export async function SaveCraftersPromptResults({ promptTemplateId, userId, promptTemplate, promptTemplateDesc }) {
+  console.log(
+    "actions.js: saveCraftersPromptResults invoked: ",
+    promptTemplateId,
+    userId,
+    promptTemplate,
+    promptTemplateDesc
+  );
 
   let queryStr = "";
   let values = [];
 
   if (promptTemplateId === "") {
-    queryStr = "INSERT INTO ab_prompt_template (prompt_template, user_id) VALUES ($1, $2);";
-    values = [promptTemplate, userId];
+    queryStr = "INSERT INTO ab_prompt_template (user_id, prompt_template, prompt_template_desc) VALUES ($1, $2, $3);";
+    values = [userId, promptTemplate, promptTemplateDesc];
   } else {
-    queryStr =
-      "INSERT INTO ab_prompt_template (prompt_template, user_id, prompt_template_id) VALUES ($1, $2, $3) ON CONFLICT (prompt_template_id) DO UPDATE SET prompt_template = $1 ";
-    values = [promptTemplate, userId, promptTemplateId];
+    queryStr = `INSERT INTO ab_prompt_template (prompt_template_id, user_id, prompt_template, prompt_template_desc) 
+          VALUES ($1, $2, $3, $4) ON CONFLICT (prompt_template_id) 
+          DO UPDATE SET prompt_template = $3, prompt_template_desc = $4;  `;
+    values = [promptTemplateId, userId, promptTemplate, promptTemplateDesc];
   }
 
   InsertRowSupabase(queryStr, values);

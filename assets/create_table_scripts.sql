@@ -25,13 +25,14 @@ CREATE TABLE ab_user_prompts_history (
     tags varchar(255),
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
-
 DROP TABLE IF EXISTS ab_prompt_template;
 CREATE TABLE ab_prompt_template (
     prompt_template_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id VARCHAR(255) NOT NULL,
     prompt_template TEXT,
-    tags varchar(255)
+    prompt_template_desc varchar(255),
+    tags varchar(255),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
 DROP TABLE IF EXISTS prompt_comments;

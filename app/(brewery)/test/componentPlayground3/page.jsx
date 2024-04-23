@@ -1,12 +1,28 @@
 "use client";
 
 import CountdownComponent from "@/app/displayComponents/CountdownComp";
-import { useState } from "react";
+import { use } from "marked";
+import { useEffect, useState } from "react";
 
 function DisplayTablePage() {
   const [startCountdown, setStartCountdown] = useState(false);
   const [stopCountdown, setStopCountdown] = useState(false);
   const [resetCountdown, setResetCountdown] = useState(false);
+
+  const [userState, setUserState] = useState({
+    user: {
+      firstName: "John",
+      lastName: "Doe",
+      age: 30,
+    },
+  });
+
+  useEffect(
+    () => {
+      console.log("Updated User State: ", userState);
+    },
+    [userState] // Only re-run the effect if userState changes
+  ); // Only re-run the effect if userState changes
 
   const handleStart = () => {
     setStartCountdown(true);
@@ -22,6 +38,40 @@ function DisplayTablePage() {
     setResetCountdown(true);
     setStartCountdown(false);
     setStopCountdown(false);
+  };
+
+  const items = [
+    { id: 1, name: "Item 1" },
+    { id: 2, name: "Item 2" },
+    { id: 3, name: "Item 3" },
+  ];
+
+  const handleClick = (id) => {
+    console.log("Item clicked with ID:", id);
+    if (id === 1) {
+      setUserState({
+        user: {
+          firstName: "Susan",
+          lastName: "Walker",
+          age: 32,
+        },
+      });
+    } else if (id === 2) {
+      setUserState((prevState) => ({
+        ...prevState, // Preserve other state if exists
+        user: {
+          ...prevState.user, // Spread existing user data
+          age: 40, // Update age
+        },
+      }));
+    } else if (id === 3) {
+      setUserState((prevState) => ({
+        user: {
+          ...prevState.user, // Spread existing user data
+          age: 45, // Update age
+        },
+      }));
+    }
   };
 
   return (
@@ -49,6 +99,38 @@ function DisplayTablePage() {
         </button>
         <CountdownComponent duration={60} start={startCountdown} stop={stopCountdown} reset={resetCountdown} />
       </div>
+
+      <div>
+        {items.map((item) => (
+          <button key={item.id} onClick={() => handleClick(item.id)}>
+            {item.name}
+          </button>
+        ))}
+      </div>
+
+      {/* Open the modal using document.getElementById('ID').showModal() method */}
+      <button className="btn" onClick={() => document.getElementById("my_modal_1").showModal()}>
+        open modal
+      </button>
+      <dialog id="my_modal_1" className="modal">
+        <div className="modal-box">
+          <h3 className="font-bold text-lg">Hello!</h3>
+          <p className="py-4">Press ESC key or click the button below to close</p>
+          <div className="modal-action">
+            <form method="dialog">
+              {/* if there is a button in form, it will close the modal */}
+              <button className="btn">Close</button>
+              <button className="btn">Select</button>
+            </form>
+            <form method="dialog">
+              {/* if there is a button in form, it will close the modal */}
+              <button className="btn">Close2</button>
+              <button className="btn">Select2</button>
+            </form>
+          </div>
+          <button className="btn">Do nothing</button>
+        </div>
+      </dialog>
     </div>
   );
 }
