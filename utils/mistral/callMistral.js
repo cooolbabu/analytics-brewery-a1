@@ -21,10 +21,17 @@ export async function callMistral(modelName, persona, instructions, promptMessag
   } else if (persona === "Personas" || persona === null) {
     return "Please select a persona";
   } else if (persona === "ChinookAssistant") {
-    // console.log(
-    //   "Mistral service invoked: " + modelName + " - " + persona + " - " + instructions + " - " + promptMessage
-    // );
-    return await GenerateChatResponse(modelName, persona, instructions, promptMessage);
+    console.log(
+      "callMistral.js: Mistral service invoked: " +
+        modelName +
+        " - " +
+        persona +
+        " - " +
+        instructions +
+        " - " +
+        promptMessage
+    );
+    return await GenerateChatResponse({ modelName, persona, promptTemplate: instructions, promptQuery: promptMessage });
   }
 }
 
@@ -89,6 +96,16 @@ async function loadPersonaAndGenerateChatResponse(modelName, persona, instructio
  */
 
 export async function GenerateChatResponse({ modelName, persona, promptTemplate, promptQuery }) {
+  console.log(
+    "callMistral.js-GenerateChatResponse: ",
+    modelName,
+    " - ",
+    persona,
+    " - ",
+    promptTemplate,
+    " - ",
+    promptQuery
+  );
   let chatResponse = "";
 
   try {
@@ -99,7 +116,9 @@ export async function GenerateChatResponse({ modelName, persona, promptTemplate,
     const fileContent = fs.readFileSync(filePath, "utf-8");
 
     let chatMessage = promptTemplate + "\n" + fileContent + "\n" + promptQuery;
-    console.log("\n\nChat message to Mistral: ", chatMessage);
+
+    console.log("\n\nModel: ", modelName);
+    console.log("Chat message to Mistral: ", chatMessage);
     chatResponse = await client.chat({
       messages: [{ role: "user", content: chatMessage }],
       model: modelName,
@@ -107,9 +126,9 @@ export async function GenerateChatResponse({ modelName, persona, promptTemplate,
     });
   } catch (error) {
     //console.log("callMistral.js - GenerateChatResponse", error);
-    response = "Unable to communicate with " + modelName + " model";
-    console.log("Returning from generateChatResponse: ", response);
-    return response;
+    chatResponse = "Unable to communicate with " + modelName + " model";
+    console.log("Returning from generateChatResponse: ", chatResponse);
+    return chatResponse;
   }
 
   // // console.log(response.choices[0].message.content);
@@ -126,6 +145,7 @@ export async function GenerateChatResponse({ modelName, persona, promptTemplate,
 
   // Remove unnecessary escape characters before underscores
   chatResponseStr = chatResponseStr.replace(/^```json|```$/g, "");
+  chatResponseStr = chatResponseStr.replace(/^```sql|```$/g, "");
   chatResponseStr = chatResponseStr.replace(/\\_/g, "_");
   try {
     if (isValidJSON(chatResponseStr)) {
@@ -142,31 +162,6 @@ export async function GenerateChatResponse({ modelName, persona, promptTemplate,
     response = "Unable to parse response from " + modelName + " model";
     return response;
   }
-}
-
-//
-export async function callMistralx(modelName, persona, instructions, promptMessage) {
-  console.log("callOpenAI.js-callOpenAI: ", modelName, " - ", persona, " - ", instructions, " - ", promptMessage);
-  if (persona === "Personas" || persona === null) {
-    console.log("callOpenAI.js-callOpenAI: ", modelName, " - ", persona, " - ", promptMessage);
-  } else if (persona === "ChinookAssistant") {
-    return await loadPersonaAndGenerateChatResponse(modelName, persona, instructions, promptMessage);
-  } else if (modelName === "x1Assistant") {
-    return await callX1Assistant(promptMessage);
-  } else
-    try {
-      const response = await openai.chat.completions.create({
-        messages: [{ role: "system", content: promptMessage }],
-        model: modelName,
-        temperature: 0,
-      });
-
-      console.log(response.choices[0].message);
-      console.log("Returning from generateChatResponse");
-      return response.choices[0].message;
-    } catch (error) {
-      return null;
-    }
 }
 
 export async function generateSQLResultsSummarization(modelName, persona, instructions, promptMessage) {

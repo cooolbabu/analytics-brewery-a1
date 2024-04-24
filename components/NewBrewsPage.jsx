@@ -296,7 +296,7 @@ function NewBrewsPage({ modelsList, firstName, tokensAvailable }) {
             </div>
 
             <div className="text-xs md:flex-grow md:px-8 md:mt-2 md:w-5/6 ">
-              <SyntaxHighlighter language="sql" style={okaidia}>
+              <SyntaxHighlighter language="sql" style={okaidia} wrapLongLines={true}>
                 {responseSQL}
               </SyntaxHighlighter>
             </div>

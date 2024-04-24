@@ -1,3 +1,4 @@
+
 erDiagram
     Album {
         integer AlbumId PK

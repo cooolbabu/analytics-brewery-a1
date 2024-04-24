@@ -78,14 +78,17 @@ async function loadPersonaAndGenerateChatResponse(modelName, persona, instructio
       temperature: 0,
     });
 
-    console.log(response.choices[0].message.content);
-    const cleanedJsonString = response.choices[0].message.content.trim().replace(/^```json|```$/g, "");
-    console.log("cleanedJsonString: ", cleanedJsonString);
-    const responseStr = JSON.parse(cleanedJsonString).query;
-    console.log("responseStr: ", responseStr);
-    //console.log(JSON.parse(response.choices[0].message.content).query);
+    // console.log("Response from Mistral -------------------------------------\n", chatResponse.choices[0].message.content);
+    let chatResponseStr = response.choices[0].message.content;
+    console.log("chatResponseStr: \n", chatResponseStr);
+
+    // Remove unnecessary escape characters before underscores
+    chatResponseStr = chatResponseStr.replace(/^```json|```$/g, "");
+    chatResponseStr = chatResponseStr.replace(/^```sql|```$/g, "");
+    chatResponseStr = chatResponseStr.replace(/\\_/g, "_");
+
     console.log("Returning from generateChatResponse");
-    return responseStr;
+    return chatResponseStr;
   } catch (error) {
     console.log(error);
   }

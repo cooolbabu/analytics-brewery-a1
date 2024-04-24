@@ -269,7 +269,7 @@ export async function SaveCraftersPromptResults({ promptTemplateId, userId, prom
   let queryStr = "";
   let values = [];
 
-  if (promptTemplateId === "") {
+  if (promptTemplateId === "" || promptTemplateId === "abc123") {
     queryStr = "INSERT INTO ab_prompt_template (user_id, prompt_template, prompt_template_desc) VALUES ($1, $2, $3);";
     values = [userId, promptTemplate, promptTemplateDesc];
   } else {
