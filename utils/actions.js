@@ -103,7 +103,7 @@ export async function savePromptQueryResults(results) {
  * QueryDataFromSupabase
  */
 export async function executeQueries(message) {
-  console.log("actions.js-executeQueries: Persona: ", message.persona);
+  // console.log("actions.js-executeQueries: Persona: ", message.persona);
   // console.log("actions.js-executeQueries: SQL Query: ", message.sqlStatement);
 
   try {
@@ -113,10 +113,10 @@ export async function executeQueries(message) {
     //console.log("getCustomerInformation: client", client);
     const queryResults = await QueryDataFromSupabase(message.sqlStatement, "sqlRows");
 
-    console.log("executeQueries: sqlResult ", queryResults);
+    // console.log("executeQueries: sqlResult ", queryResults);
     return queryResults;
   } catch (error) {
-    console.log(error);
+    // console.log(error);
     return { error: "executeQueries()::Something went wrong" };
   }
 }

@@ -42,22 +42,22 @@ function NewBrewsPage({ modelsList, firstName, tokensAvailable }) {
   const [sqlResults, setSQLResults] = useState([]);
   const [summaryMsg, setSummaryMsg] = useState("Descriptive summarization displayed here...");
 
-  console.log("NewBrewsPage.jsx: ----------------------------Begin------------------------------- ", modelsList);
-  console.log("NewBrewsPage.jsx: List of providers: ", providerNames);
-  console.log("NewBrewsPage.jsx: modelsList: ", modelsList);
-  console.log("NewBrewsPage.jsx: Personas: ", personas);
-  console.log("NewBrewsPage.jsx: FirstName: ", firstName);
-  console.log("NewBrewsPage.jsx: Selected Provider: ", provider);
-  console.log("NewBrewsPage.jsx: Selected model: ", modelName);
-  console.log("NewBrewsPage.jsx: Selected Persona: ", personaName);
-  console.log("NewBrewsPage.jsx: tokensAvailable: ", tokensAvailable);
-  console.log(modelsList.providers[0].models);
+  // console.log("NewBrewsPage.jsx: ----------------------------Begin------------------------------- ", modelsList);
+  // console.log("NewBrewsPage.jsx: List of providers: ", providerNames);
+  // console.log("NewBrewsPage.jsx: modelsList: ", modelsList);
+  // console.log("NewBrewsPage.jsx: Personas: ", personas);
+  // console.log("NewBrewsPage.jsx: FirstName: ", firstName);
+  // console.log("NewBrewsPage.jsx: Selected Provider: ", provider);
+  // console.log("NewBrewsPage.jsx: Selected model: ", modelName);
+  // console.log("NewBrewsPage.jsx: Selected Persona: ", personaName);
+  // console.log("NewBrewsPage.jsx: tokensAvailable: ", tokensAvailable);
+  // console.log(modelsList.providers[0].models);
 
   const providerModels = listModelsByProvider(modelsList, provider);
 
-  useEffect(() => {
-    console.log("NewBrewsPage.jsx: sqlResults changed: ", sqlResults);
-  }, [sqlResults]);
+  // useEffect(() => {
+  //   console.log("NewBrewsPage.jsx: sqlResults changed: ", sqlResults);
+  // }, [sqlResults]);
 
   // Use mutation function to generate a SQL query from the prompt
   const {
@@ -71,9 +71,7 @@ function NewBrewsPage({ modelsList, firstName, tokensAvailable }) {
         toast.error("Something went wrong");
         return;
       }
-      console.log("NewBrewsPage.jsx-Mutation: runPromptQuery: ", data);
-
-      console.log("NewBrewsPage.jsx-Mutation: runPromptQuery: prettierData: ", data);
+      // console.log("NewBrewsPage.jsx-Mutation: runPromptQuery: ", data);
       setResponseSQL(data);
     },
   });
@@ -90,8 +88,8 @@ function NewBrewsPage({ modelsList, firstName, tokensAvailable }) {
         toast.error("Something went wrong");
         return;
       }
-      console.log("NewBrewsPage.jsx-Mutation: savePromptQueryResults: ", results);
-      console.log("NewBrewsPage.jsx-Mutation: savePromptQueryResults: ", data);
+      // console.log("NewBrewsPage.jsx-Mutation: savePromptQueryResults: ", results);
+      // console.log("NewBrewsPage.jsx-Mutation: savePromptQueryResults: ", data);
     },
   });
 
@@ -107,9 +105,9 @@ function NewBrewsPage({ modelsList, firstName, tokensAvailable }) {
         toast.error("Something went wrong");
         return;
       }
-      console.log("NewBrewsPage.jsx-Mutation: runSQLQuery: ", data);
+      // console.log("NewBrewsPage.jsx-Mutation: runSQLQuery: ", data);
       setSQLResults(data);
-      console.log("NewBrewsPage.jsx-Mutation: sqlResults: ", sqlResults);
+      // console.log("NewBrewsPage.jsx-Mutation: sqlResults: ", sqlResults);
     },
   });
 
@@ -125,15 +123,15 @@ function NewBrewsPage({ modelsList, firstName, tokensAvailable }) {
         toast.error("Something went wrong");
         return;
       }
-      console.log("NewBrewsPage.jsx-Mutation: runQueryresultSummarization: ", data);
+      // console.log("NewBrewsPage.jsx-Mutation: runQueryresultSummarization: ", data);
       setSummaryMsg(data);
-      console.log("NewBrewsPage.jsx-Mutation: runQueryresultSummarization: ", summaryMsg);
+      // console.log("NewBrewsPage.jsx-Mutation: runQueryresultSummarization: ", summaryMsg);
     },
   });
 
   const handleRunQuery = (e) => {
     //e.preventDefault();
-    console.log("NewBrewersPage.jsx: handleRunQuery");
+    // console.log("NewBrewersPage.jsx: handleRunQuery");
 
     // Standardize this sucker - high priority
     const promptMessage = {
@@ -146,15 +144,15 @@ function NewBrewsPage({ modelsList, firstName, tokensAvailable }) {
       query: message,
       sqlStatement: responseSQL,
     };
-    console.log("NewBrewersPage.jsx: Before executeQueries. Value of query \n", promptMessage.sqlStatement);
+    // console.log("NewBrewersPage.jsx: Before executeQueries. Value of query \n", promptMessage.sqlStatement);
     setSQLResults([]);
     runSQLQuery(promptMessage);
-    console.log("NewBrewersPage.jsx: after executeQueries. Value of query \n", sqlResults);
+    // console.log("NewBrewersPage.jsx: after executeQueries. Value of query \n", sqlResults);
   };
 
   const handleSaveResults = (e) => {
     //e.preventDefault();
-    console.log("NewBrewersPage.jsx: Summarize results \n");
+    // console.log("NewBrewersPage.jsx: Summarize results \n");
     // Standardize this sucker - high priority
     const promptMessage = {
       userId: userId,
@@ -173,7 +171,7 @@ function NewBrewsPage({ modelsList, firstName, tokensAvailable }) {
 
   const handleSummarizeResults = (e) => {
     //e.preventDefault();
-    console.log("NewBrewersPage.jsx: Summarize results \n");
+    // console.log("NewBrewersPage.jsx: Summarize results \n");
     // Standardize this sucker - high priority
     const promptMessage = {
       provider: provider,
@@ -192,7 +190,7 @@ function NewBrewsPage({ modelsList, firstName, tokensAvailable }) {
   const handleSubmit = (e) => {
     e.preventDefault();
     setResponseSQL("Loading...");
-    console.log("NewBrewersPage.jsx: Before mutate. Value of query \n", message);
+    // console.log("NewBrewersPage.jsx: Before mutate. Value of query \n", message);
 
     //----------------------------------------------
     // Assuming you want to match this id
@@ -219,9 +217,9 @@ function NewBrewsPage({ modelsList, firstName, tokensAvailable }) {
     runPromptQuery(promptMessage);
   };
 
-  console.log(
-    "NewBrewsPage.jsx: Rendering NewBrewsPage: ----------------------------end------------------------------- "
-  );
+  // console.log(
+  //   "NewBrewsPage.jsx: Rendering NewBrewsPage: ----------------------------end------------------------------- "
+  // );
   return (
     <div>
       <div className="flex flex-row items-center justify-between px-20">

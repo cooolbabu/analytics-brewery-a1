@@ -3,16 +3,16 @@ import ShowSQLErrorMessage from "@/app/displayComponents/ShowSQLErrorMessage";
 function SQLTable(queryResults) {
   let headers = [];
 
-  console.log("SQLTable.jsx: Value of queryResults: \n", queryResults);
-  console.log("SQLTable.jsx: Value of queryResults.data: \n", queryResults.data);
-  console.log("SQLTable.jsx: Value of queryResults.data: \n", queryResults.data.status);
-  console.log("SQLTable.jsx: Value of message: \n", queryResults.data.message);
+  // console.log("SQLTable.jsx: Value of queryResults: \n", queryResults);
+  // console.log("SQLTable.jsx: Value of queryResults.data: \n", queryResults.data);
+  // console.log("SQLTable.jsx: Value of queryResults.data: \n", queryResults.data.status);
+  // console.log("SQLTable.jsx: Value of message: \n", queryResults.data.message);
   // console.log("SQLTable.jsx: Length queryResults: \n", queryResults.data.message;
 
   if (queryResults.data.status && queryResults.data.message.length > 0) {
-    console.log("SQLTable.jsx: Table headers are: ", Object.keys(queryResults.data.message[0]));
+    // console.log("SQLTable.jsx: Table headers are: ", Object.keys(queryResults.data.message[0]));
     headers = Object.keys(queryResults.data.message[0]);
-    console.log("SQLTable.jsx: Other headers are: ", headers);
+    // console.log("SQLTable.jsx: Other headers are: ", headers);
   }
 
   return (
