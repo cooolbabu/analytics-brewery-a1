@@ -1,5 +1,5 @@
 "use client";
-
+import toast from "react-hot-toast";
 import ListDropdownComponent from "@/app/displayComponents/ListDropDownComponent";
 import { listModelsByProvider } from "@/lib/LLMProvidersUtils";
 import { useEffect, useState } from "react";
@@ -80,14 +80,17 @@ function BrewCraftersComponent({ modelsList, userProfile }) {
     data: data_CPR,
   } = useMutation({
     mutationFn: (saveParams) => SaveCraftersPromptResults(saveParams),
-    onSuccess: (data) => {
-      if (!data) {
-        toast.error("Something went wrong");
-        return;
-      }
-      //console.log("BrewCraftersComponent.jsx-Mutation: before: ", data);
-      setDisplayMessage(marked(data));
-      //console.log("BrewCraftersComponent.jsx-Mutation: after: ", displayMessage);
+    onSuccess: (data_CPR) => {
+      console.log("saveCraftersPromptResultsMutation: ", data_CPR);
+      if (!data_CPR || !data_CPR.success)
+        toast.error("Something went wrong with saving the prompt template. Please try again.");
+      else toast.success("Successfully save prompt template.");
+    },
+    onError: (error) => {
+      console.log("Unhandled error ", error);
+      console.log("Unhandled error ", data_CPR);
+      // This will handle any errors that were thrown and not caught in the mutation function
+      toast.error("Error occurred: " + (error.message || "Unknown error"));
     },
   });
 
@@ -126,7 +129,6 @@ function BrewCraftersComponent({ modelsList, userProfile }) {
         <p className="px-4">Let&apos;s mix some query prompts!</p>
         <input type="password" placeholder="Bring your own API Key" className="input" />
       </div>
-
       <div className="flex flex-col md:flex-row justify-between items-left w-full gap-2 mb-2 p-2 rounded-xl shadow-md">
         <div className="md:w-1/4">
           <ListDropdownComponent
@@ -156,6 +158,7 @@ function BrewCraftersComponent({ modelsList, userProfile }) {
             onOptionSelect={(option) => setPersonaName(option)}
           />
         </div>
+
         <div className="md:w-1/4">
           <button
             className="btn btn-secondary"
@@ -166,7 +169,6 @@ function BrewCraftersComponent({ modelsList, userProfile }) {
           </button>
         </div>
       </div>
-
       {/* Form for prompt submission -begin */}
       <form onSubmit={handleSubmit} className="rounded-xl shadow-md p-2">
         <div className="md:w-1/4"></div>
@@ -198,7 +200,7 @@ function BrewCraftersComponent({ modelsList, userProfile }) {
               {isPendingMCI ? "Processing ..." : "Submit"}
             </button>
             <button className="btn btn-info btn-sm min-w-28" type="button" onClick={saveCraftersPromptResultsEvent}>
-              Save
+              {isPending_CPR ? "Pending" : "Save"}
             </button>
             <button className="btn btn-info btn-sm min-w-28" type="button" onClick={saveAsCraftersPromptResultsEvent}>
               Save As New
@@ -222,7 +224,6 @@ function BrewCraftersComponent({ modelsList, userProfile }) {
           </div>
         </div>
       </div>
-
       {/* Modal form for Load Prompt Template -begin
        */}
       <dialog id="prompt_template_modal" className="modal">

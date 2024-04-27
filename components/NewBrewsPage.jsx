@@ -3,12 +3,12 @@ import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { okaidia } from "react-syntax-highlighter/dist/esm/styles/prism";
 import ListDropdownComponent from "@/app/displayComponents/ListDropDownComponent";
 import { listModelsByProvider } from "@/lib/LLMProvidersUtils";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import {
   executeQueries,
   executeQuerySummarization,
-  generatePromptResponse,
+  generatePromptResponseTypeSQL,
   savePromptQueryResults,
 } from "@/utils/actions";
 import SQLTable from "./SQLTable";
@@ -37,7 +37,7 @@ function NewBrewsPage({ modelsList, firstName, tokensAvailable }) {
   const [modelName, setModelName] = useState("Models");
   const [personaName, setPersonaName] = useState("Personas");
   const [message, setMessage] = useState("Type your prompt here ...");
-  const [responseSQL, setResponseSQL] = useState('SELECT * FROM "Customer" limit 3;');
+  const [responseSQL, setResponseSQL] = useState('SELECT * FROM "Customers" limit 3;');
 
   const [sqlResults, setSQLResults] = useState([]);
   const [summaryMsg, setSummaryMsg] = useState("Descriptive summarization displayed here...");
@@ -55,13 +55,17 @@ function NewBrewsPage({ modelsList, firstName, tokensAvailable }) {
 
   const providerModels = listModelsByProvider(modelsList, provider);
 
+  useEffect(() => {
+    console.log("NewBrewsPage.jsx: sqlResults changed: ", sqlResults);
+  }, [sqlResults]);
+
   // Use mutation function to generate a SQL query from the prompt
   const {
     mutate: runPromptQuery, // suffixing PQ
     isPending: isPending_PQ,
     data: data_PQ,
   } = useMutation({
-    mutationFn: (query) => generatePromptResponse(query),
+    mutationFn: (query) => generatePromptResponseTypeSQL(query),
     onSuccess: (data) => {
       if (!data) {
         toast.error("Something went wrong");
@@ -143,7 +147,7 @@ function NewBrewsPage({ modelsList, firstName, tokensAvailable }) {
       sqlStatement: responseSQL,
     };
     console.log("NewBrewersPage.jsx: Before executeQueries. Value of query \n", promptMessage.sqlStatement);
-
+    setSQLResults([]);
     runSQLQuery(promptMessage);
     console.log("NewBrewersPage.jsx: after executeQueries. Value of query \n", sqlResults);
   };
@@ -187,6 +191,7 @@ function NewBrewsPage({ modelsList, firstName, tokensAvailable }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    setResponseSQL("Loading...");
     console.log("NewBrewersPage.jsx: Before mutate. Value of query \n", message);
 
     //----------------------------------------------
@@ -314,7 +319,7 @@ function NewBrewsPage({ modelsList, firstName, tokensAvailable }) {
                 </button>
               </div>
               <div className="md:w-5/6 md:px-8 md:mt-2">
-                <SQLTable queryResultsJson data={sqlResults} />
+                <SQLTable data={sqlResults} />
               </div>
             </div>
           </div>

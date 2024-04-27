@@ -5,6 +5,7 @@ import prisma from "./db";
 import { callOpenAI, generateSQLResultsSummarization } from "./callOpenAI";
 import { QueryDataFromSupabase, InsertRowSupabase } from "@/utils/dbutils/db_supabase";
 import { callMistral } from "./mistral/callMistral";
+import { callGemini } from "./google/callGoogle";
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -48,7 +49,7 @@ export async function sayHello(message) {
  * @param {Object} message - The message to be logged.
  * @returns {Promise<string>} The response message from the server.
  */
-export async function generatePromptResponse(message) {
+export async function generatePromptResponseTypeSQL(message) {
   // console.log("Hello from the server: ", message);
   console.log("actions.js-generatePromptResponse: Provider: ", message.provider);
   console.log("actions.js-generatePromptResponse: Model: ", message.model);
@@ -59,13 +60,24 @@ export async function generatePromptResponse(message) {
 
   // callOpenAI fucntion from callOpenAI.js
   let response = "";
-  if (message.provider === "OpenAI") {
-    response = await callOpenAI(message.model, message.persona, message.instructions, message.query);
-  } else if (message.provider === "Mistral") {
-    response = await callMistral(message.model, message.persona, message.instructions, message.query);
+  switch (message.provider) {
+    case "OpenAI":
+      response = await callOpenAI(message.model, message.persona, message.instructions, message.query);
+      break;
+    case "Mistral":
+      response = await callMistral(message.model, message.persona, message.instructions, message.query);
+      break;
+    case "Anthropic":
+      response = "Anthropic is not available";
+      break;
+    case "Google":
+      response = await callGemini(message.model, message.persona, message.instructions, message.query);
+      break;
+    default:
   }
 
-  console.log("actions.js-generatePromptResponse: ", response);
+  response = await callMistral("mistral-small-latest", "SQLAssistant", " ", response);
+
   return response;
 }
 
@@ -92,7 +104,7 @@ export async function savePromptQueryResults(results) {
  */
 export async function executeQueries(message) {
   console.log("actions.js-executeQueries: Persona: ", message.persona);
-  console.log("actions.js-executeQueries: SQL Query: ", message.sqlStatement);
+  // console.log("actions.js-executeQueries: SQL Query: ", message.sqlStatement);
 
   try {
     //await new Promise((resolve) => setTimeout(resolve, 3000)); // Add a 3-second delay
@@ -268,18 +280,35 @@ export async function SaveCraftersPromptResults({ promptTemplateId, userId, prom
 
   let queryStr = "";
   let values = [];
-
-  if (promptTemplateId === "" || promptTemplateId === "abc123") {
-    queryStr = "INSERT INTO ab_prompt_template (user_id, prompt_template, prompt_template_desc) VALUES ($1, $2, $3);";
-    values = [userId, promptTemplate, promptTemplateDesc];
-  } else {
-    queryStr = `INSERT INTO ab_prompt_template (prompt_template_id, user_id, prompt_template, prompt_template_desc) 
+  try {
+    // if (promptTemplateId === "" || promptTemplateId === "abc123") {
+    if (promptTemplateId === "") {
+      queryStr =
+        "INSERT INTO ab_prompt_template (user_id, prompt_template, prompt_template_desc) VALUES ($1, $2, $3) RETURNING prompt_template_id;";
+      values = [userId, promptTemplate, promptTemplateDesc];
+    } else {
+      queryStr = `INSERT INTO ab_prompt_template (prompt_template_id, user_id, prompt_template, prompt_template_desc) 
           VALUES ($1, $2, $3, $4) ON CONFLICT (prompt_template_id) 
-          DO UPDATE SET prompt_template = $3, prompt_template_desc = $4;  `;
-    values = [promptTemplateId, userId, promptTemplate, promptTemplateDesc];
-  }
+          DO UPDATE SET prompt_template = $3, prompt_template_desc = $4 RETURNING prompt_template_id;  `;
+      values = [promptTemplateId, userId, promptTemplate, promptTemplateDesc];
+    }
+    console.log("\n\nactions.js: Before InsertRowSupabase: ");
+    const result = await InsertRowSupabase(queryStr, values);
+    console.log("\n\nactions.js: After InsertRowSupabase: ", result);
 
-  InsertRowSupabase(queryStr, values);
+    if (result.rowCount > 0) {
+      return { success: true, data: "Succesfully saved the prompt details" };
+    } else {
+      return { success: false, error: result.error };
+    }
+  } catch (error) {
+    console.log("actions.js: saveCraftersPromptResults: ", result.error);
+    console.log("actions.js: saveCraftersPromptResults: ", result);
+    return {
+      success: false,
+      error: error.message || "SaveCraftersPromptResults: Action failed to add a row to database",
+    };
+  }
 }
 
 export const getAllPromptTemplates = async ({ searchValue, userId }) => {
