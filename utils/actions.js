@@ -77,6 +77,7 @@ export async function generatePromptResponseTypeSQL(message) {
   }
 
   response = await callMistral("mistral-small-latest", "SQLAssistant", " ", response);
+  console.log("actions.js-generatePromptResponse: ", response);
 
   return response;
 }
