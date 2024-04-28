@@ -310,7 +310,7 @@ function NewBrewsPage({ modelsList, firstName, tokensAvailable }) {
               <div className="flex flex-col md:w-1/6">
                 <h2 className="text-lg font-semibold px-4">SQL Results</h2>
                 <button className="btn btn-primary btn-sm mt-4" type="button" onClick={(e) => handleSaveResults()}>
-                  Save
+                  {isPending_SR ? "Processing .." : "Save"}
                 </button>
                 <button className="btn btn-primary btn-sm mt-4" type="button" onClick={(e) => handleSummarizeResults()}>
                   Summarize

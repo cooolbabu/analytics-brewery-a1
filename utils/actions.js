@@ -6,6 +6,7 @@ import { callOpenAI, generateSQLResultsSummarization } from "./callOpenAI";
 import { QueryDataFromSupabase, InsertRowSupabase } from "@/utils/dbutils/db_supabase";
 import { callMistral } from "./mistral/callMistral";
 import { callGemini } from "./google/callGoogle";
+import hashSQLResults from "./dbutils/hashSqlResults";
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -83,16 +84,38 @@ export async function generatePromptResponseTypeSQL(message) {
 }
 
 /**
- * Saves the results of a prompt query.
+ * Saves the results of a prompt query. Incoming from NewBrewsPage.jsx - Saving Prompt activity.
  *
  * @param {any} results - The results of the prompt query.
  * @returns {Promise<void>} - A promise that resolves when the results are saved.
  */
 export async function savePromptQueryResults(results) {
-  console.log("actions.js-savePromptQueryResults: ", results);
-  const queryStr =
-    "INSERT INTO ab_user_prompts (user_id, provider, model, persona, prompt_msg) VALUES ($1, $2, $3, $4, $5)";
-  const values = [results.userId, results.provider, results.model, results.persona, results.promptQuery];
+  // console.log("actions.js-savePromptQueryResults: ", results);
+  // console.log("actions.js-savePromptQueryResults data: ", results.sqlResults.message);
+
+  let headersHash, dataHash;
+  if (results.sqlResults.status) ({ headersHash, dataHash } = hashSQLResults(results.sqlResults.message));
+
+  const queryStr = `INSERT INTO ab_prompt_execution_history (
+          user_id, provider, model, persona, prompt_query, sql_statement, execution_status, header_hash, data_hash, sql_err_message) 
+          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10);`;
+  let values = [
+    results.userId,
+    results.provider,
+    results.model,
+    results.persona,
+    results.promptQuery,
+    results.sqlStatement,
+    results.sqlResults.status,
+    headersHash,
+    dataHash,
+  ];
+
+  if (!results.sqlResults.status) {
+    // If SQL had an error, save the error message
+    values.push(results.sqlResults.message);
+  } else values.push("");
+
   InsertRowSupabase(queryStr, values);
 }
 /**
@@ -263,7 +286,7 @@ export async function generateTourResponse({ city, country }) {
 // };
 
 /**
- * Saves Crafter's prompt templates
+ * Saves Crafter's prompt templates - Incoming from NewBrewsPage.jsx - Freeze for now
  *
  * @param {Object} options - The options for saving the prompt results.
  * @param {string} options.promptTemplate - The prompt template to save.

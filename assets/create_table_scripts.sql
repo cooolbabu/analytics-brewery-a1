@@ -58,3 +58,20 @@ select * FROM ab_user_prompts;
 
 INSERT INTO ab_user_prompts (user_id, provider, model, persona, prompt_Msg, tags) VALUES
 ('user1', 'OpenAI', 'GPT-4', 'Assistant', 'How do I create a PostgreSQL table? by user1', ARRAY['sql', 'postgres', 'database'])
+
+DROP TABLE IF EXISTS ab_prompt_execution_history;
+CREATE TABLE ab_prompt_execution_history (
+    ab_prompt_execution_history_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id VARCHAR(255) NOT NULL,
+    provider varchar(255),
+    model varchar(255),
+    persona varchar(255),
+    prompt_query TEXT,
+    sql_statement TEXT,
+    execution_status boolean,
+    header_hash varchar(255),
+    data_hash varchar(255),
+    sql_err_message    
+    tags varchar(255),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);

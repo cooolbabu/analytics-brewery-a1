@@ -10,7 +10,7 @@ import { generateSimpleGUID } from "../baseUtitls";
  */
 function standardErrorHandling(errorMsg, error = null) {
   const errorGUID = generateSimpleGUID();
-  // console.log(errorGUID, error);
+  console.log(errorGUID, error);
 
   let errorString = `Message: ${error.message}
     Error Hint: ${error.hint}
@@ -153,12 +153,13 @@ export async function InsertRowSupabase(queryStr, values) {
   await new Promise((resolve) => setTimeout(resolve, 3000)); // Add a 3-second delay
   try {
     const client = await createSupabaseClient();
-    console.log("InsertRowSupabase: client", queryStr, values);
+    // console.log("InsertRowSupabase: client", queryStr, values);
     const sqlResult = await client.query(queryStr, values);
-    console.log("InsertRowSupabase: sqlResult ", sqlResult);
+    // console.log("InsertRowSupabase: sqlResult ", sqlResult);
     return sqlResult;
   } catch (error) {
     const errObject = standardErrorHandling("QueryDataFromSupabase()::Something went wrong", error);
+
     return errObject;
   }
 }
