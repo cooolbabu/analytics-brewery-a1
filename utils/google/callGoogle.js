@@ -1,11 +1,11 @@
 "use server";
 
-import MistralClient from "@mistralai/mistralai";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 const fs = require("fs");
 const path = require("path");
 
-const apiKey = process.env.MISTRAL_API_KEY;
-const client = new MistralClient(apiKey);
+const apiKey = process.env.GEMINI_API_KEY;
+const client = new GoogleGenerativeAI(apiKey); // Think about changing genAIClient
 
 /**
  * Calls the OpenAI API to generate text based on the provided model and prompt.
@@ -14,7 +14,7 @@ const client = new MistralClient(apiKey);
  * @param {string} promptMessage - The prompt message to use for text generation.
  * @returns {Promise<string|null>} - A promise that resolves to the generated text or null if an error occurs.
  */
-export async function callMistral(modelName, persona, instructions, promptMessage) {
+export async function callGemini(modelName, persona, instructions, promptMessage) {
   // console.log("callMistral.js-callMistral: ", modelName, " - ", persona, " - ", instructions, " - ", promptMessage);
 
   if (modelName === "Models" || modelName === null) {
@@ -47,33 +47,24 @@ export async function callMistral(modelName, persona, instructions, promptMessag
 
 export async function GenerateChatResponse({ modelName, persona, promptTemplate, promptQuery }) {
   let personaContent = "";
-
   let chatResponse = "";
 
-  if (persona === "SQLAssistant") {
-    modelName = "mistral-small-latest";
-    // console.log("SQLAssistant persona selected - ", modelName);
-  }
-
   try {
-    const model = "mistral-medium-latest";
+    const model = "gemini-pro";
     modelName = modelName.trim() || model; // set default model
 
     // TODO: Add conditions to load different personas
     switch (persona) {
       case "ChinookAssistant":
-        // console.log("Loading ChinookAssistant persona");
+        console.log("Loading ChinookAssistant persona");
         const filePath = path.join("./", "assets", "ChinookDBER.txt");
         personaContent = fs.readFileSync(filePath, "utf-8");
         break;
       case "SQLAssistant":
-        personaContent = `
-        You are a SQL programmer who can write SQL code. You will given a message that may or may not contain SQL code with explanations.
-        If the message does not contain any SQL code, return the message as is.
-        If the message contains SQL code, then seperated the SQL code and explanations.
-        Summarize the explanations as comments. Return comments and SQL code without explanations. 
-        Important: Your repsonse should contain only SQL code and comments that can be executed in a SQL environment.      
-        `;
+        personaContent =
+          " You are a SQL programmer who can write SQL code." +
+          "You will be given the a message. The message will contain SQL code and explanations. You  convert explanations into comments and code as is." +
+          "Your response will be a text that can be displayed in a editor.";
         break;
       default:
         personaContent = persona;
@@ -81,48 +72,32 @@ export async function GenerateChatResponse({ modelName, persona, promptTemplate,
 
     let chatMessage = promptTemplate + "\n" + personaContent + "\n" + promptQuery;
 
-    // console.log("\n\nModel: ", modelName);
-    // console.log("Chat message to Mistral: ", chatMessage);
-    chatResponse = await client.chat({
-      messages: [{ role: "user", content: chatMessage }],
-      model: modelName,
-      temperature: 0,
-    });
+    console.log("\n\nCallGoogle Model: ", modelName);
+    console.log("CallGoogle Chat message to Gemini: ", chatMessage);
+
+    const geminiModel = client.getGenerativeModel({ model: "gemini-pro" });
+    const response = await geminiModel.generateContent(chatMessage);
+    console.log("Response from Gemini -------------------------------------\n", response);
+    chatResponse = response.response.text();
   } catch (error) {
-    console.log("callMistral.js - GenerateChatResponse", error);
+    console.log("callGoogle.js - GenerateChatResponse", error);
     chatResponse = "Unable to communicate with " + modelName + " model";
     console.log("Returning from generateChatResponse: ", chatResponse, error.message);
     return chatResponse;
   }
 
-  // // console.log(response.choices[0].message.content);
-  // // const cleanedJsonString = response.choices[0].message.content.trim().replace(/^```json|```$/g, "");
-  // // console.log("cleanedJsonString: ", cleanedJsonString);
-  // // const responseStr = JSON.parse(cleanedJsonString).query;
-  // // console.log("responseStr: ", responseStr);
-  // // //console.log(JSON.parse(response.choices[0].message.content).query);
-  // // console.log("Returning from generateChatResponse");
-
-  // console.log("Response from Mistral -------------------------------------\n", chatResponse.choices[0].message.content);
-  let chatResponseStr = chatResponse.choices[0].message.content;
-  // console.log("call Mistral.js-chatResponseStr: \n", chatResponseStr);
-
-  // Remove unnecessary escape characters before underscores
-  chatResponseStr = extractAllSQL(chatResponseStr);
-  // console.log("call Mistral.js-chatResponseStr: \n", chatResponseStr);
-  chatResponseStr = chatResponseStr.replace(/^```json|```$/g, "");
-  chatResponseStr = chatResponseStr.replace(/^```sql|```$/g, "");
-  chatResponseStr = chatResponseStr.replace(/\\_/g, "_");
+  chatResponse = chatResponse.replace(/^```json|```$/g, "");
+  chatResponse = chatResponse.replace(/^```sql|```$/g, "");
+  chatResponse = chatResponse.replace(/\\_/g, "_");
   try {
-    if (isValidJSON(chatResponseStr)) {
-      const jsonRespObject = JSON.parse(chatResponseStr);
-      // console.log("jsonRespObject-query:", jsonRespObject);
-      // console.log("jsonRespObject-query:", jsonRespObject.query);
+    if (isValidJSON(chatResponse)) {
+      const jsonRespObject = JSON.parse(chatResponse);
+      console.log("jsonRespObject-query:", jsonRespObject);
+      console.log("jsonRespObject-query:", jsonRespObject.query);
       return jsonRespObject.query;
     } else {
       // console.log("Unable to parse this json object \n", chatResponseStr);
-      // console.log("Returning from Mistral.js-chatResponseStr: \n", chatResponseStr);
-      return chatResponseStr;
+      return chatResponse;
     }
   } catch (error) {
     console.log(error);
@@ -133,7 +108,7 @@ export async function GenerateChatResponse({ modelName, persona, promptTemplate,
 
 export async function generateSQLResultsSummarization(modelName, persona, instructions, promptMessage) {
   try {
-    // console.log("callOpenAI.js-generateSQLResultsSummarization: ", instructions + "\n" + promptMessage);
+    console.log("callOpenAI.js-generateSQLResultsSummarization: ", instructions + "\n" + promptMessage);
 
     const response = await openai.chat.completions.create({
       messages: [
@@ -146,7 +121,7 @@ export async function generateSQLResultsSummarization(modelName, persona, instru
 
     console.log(response.choices[0].message.content);
     //console.log(JSON.parse(response.choices[0].message.content).query);
-    // console.log("Returning from generateSQLResultsSummarization");
+    console.log("Returning from generateSQLResultsSummarization");
     return response.choices[0].message.content;
   } catch (error) {
     console.log(error);
@@ -222,16 +197,4 @@ function isValidJSON(str) {
     // If parsing fails (throws an error), return false
     return false;
   }
-}
-
-function extractAllSQL(text) {
-  const regex = /```sql\s*([\s\S]*?)\s*```/g;
-  const matches = [...text.matchAll(regex)];
-  if (matches.length === 0) {
-    // No SQL blocks found, return original text
-    return text;
-  }
-  // Concatenate all SQL codes into one big string
-  const allSqlCombined = matches.map((match) => match[1]).join("\n");
-  return allSqlCombined;
 }

@@ -3,12 +3,12 @@ import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { okaidia } from "react-syntax-highlighter/dist/esm/styles/prism";
 import ListDropdownComponent from "@/app/displayComponents/ListDropDownComponent";
 import { listModelsByProvider } from "@/lib/LLMProvidersUtils";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import {
   executeQueries,
   executeQuerySummarization,
-  generatePromptResponse,
+  generatePromptResponseTypeSQL,
   savePromptQueryResults,
 } from "@/utils/actions";
 import SQLTable from "./SQLTable";
@@ -37,23 +37,27 @@ function NewBrewsPage({ modelsList, firstName, tokensAvailable }) {
   const [modelName, setModelName] = useState("Models");
   const [personaName, setPersonaName] = useState("Personas");
   const [message, setMessage] = useState("Type your prompt here ...");
-  const [responseSQL, setResponseSQL] = useState('SELECT * FROM "Customer" limit 3;');
+  const [responseSQL, setResponseSQL] = useState('SELECT * FROM "Customers" limit 3;');
 
   const [sqlResults, setSQLResults] = useState([]);
   const [summaryMsg, setSummaryMsg] = useState("Descriptive summarization displayed here...");
 
-  console.log("NewBrewsPage.jsx: ----------------------------Begin------------------------------- ", modelsList);
-  console.log("NewBrewsPage.jsx: List of providers: ", providerNames);
-  console.log("NewBrewsPage.jsx: modelsList: ", modelsList);
-  console.log("NewBrewsPage.jsx: Personas: ", personas);
-  console.log("NewBrewsPage.jsx: FirstName: ", firstName);
-  console.log("NewBrewsPage.jsx: Selected Provider: ", provider);
-  console.log("NewBrewsPage.jsx: Selected model: ", modelName);
-  console.log("NewBrewsPage.jsx: Selected Persona: ", personaName);
-  console.log("NewBrewsPage.jsx: tokensAvailable: ", tokensAvailable);
-  console.log(modelsList.providers[0].models);
+  // console.log("NewBrewsPage.jsx: ----------------------------Begin------------------------------- ", modelsList);
+  // console.log("NewBrewsPage.jsx: List of providers: ", providerNames);
+  // console.log("NewBrewsPage.jsx: modelsList: ", modelsList);
+  // console.log("NewBrewsPage.jsx: Personas: ", personas);
+  // console.log("NewBrewsPage.jsx: FirstName: ", firstName);
+  // console.log("NewBrewsPage.jsx: Selected Provider: ", provider);
+  // console.log("NewBrewsPage.jsx: Selected model: ", modelName);
+  // console.log("NewBrewsPage.jsx: Selected Persona: ", personaName);
+  // console.log("NewBrewsPage.jsx: tokensAvailable: ", tokensAvailable);
+  // console.log(modelsList.providers[0].models);
 
   const providerModels = listModelsByProvider(modelsList, provider);
+
+  // useEffect(() => {
+  //   console.log("NewBrewsPage.jsx: sqlResults changed: ", sqlResults);
+  // }, [sqlResults]);
 
   // Use mutation function to generate a SQL query from the prompt
   const {
@@ -61,15 +65,13 @@ function NewBrewsPage({ modelsList, firstName, tokensAvailable }) {
     isPending: isPending_PQ,
     data: data_PQ,
   } = useMutation({
-    mutationFn: (query) => generatePromptResponse(query),
+    mutationFn: (query) => generatePromptResponseTypeSQL(query),
     onSuccess: (data) => {
       if (!data) {
         toast.error("Something went wrong");
         return;
       }
-      console.log("NewBrewsPage.jsx-Mutation: runPromptQuery: ", data);
-
-      console.log("NewBrewsPage.jsx-Mutation: runPromptQuery: prettierData: ", data);
+      // console.log("NewBrewsPage.jsx-Mutation: runPromptQuery: ", data);
       setResponseSQL(data);
     },
   });
@@ -86,8 +88,8 @@ function NewBrewsPage({ modelsList, firstName, tokensAvailable }) {
         toast.error("Something went wrong");
         return;
       }
-      console.log("NewBrewsPage.jsx-Mutation: savePromptQueryResults: ", results);
-      console.log("NewBrewsPage.jsx-Mutation: savePromptQueryResults: ", data);
+      // console.log("NewBrewsPage.jsx-Mutation: savePromptQueryResults: ", results);
+      // console.log("NewBrewsPage.jsx-Mutation: savePromptQueryResults: ", data);
     },
   });
 
@@ -103,9 +105,9 @@ function NewBrewsPage({ modelsList, firstName, tokensAvailable }) {
         toast.error("Something went wrong");
         return;
       }
-      console.log("NewBrewsPage.jsx-Mutation: runSQLQuery: ", data);
+      // console.log("NewBrewsPage.jsx-Mutation: runSQLQuery: ", data);
       setSQLResults(data);
-      console.log("NewBrewsPage.jsx-Mutation: sqlResults: ", sqlResults);
+      // console.log("NewBrewsPage.jsx-Mutation: sqlResults: ", sqlResults);
     },
   });
 
@@ -121,15 +123,15 @@ function NewBrewsPage({ modelsList, firstName, tokensAvailable }) {
         toast.error("Something went wrong");
         return;
       }
-      console.log("NewBrewsPage.jsx-Mutation: runQueryresultSummarization: ", data);
+      // console.log("NewBrewsPage.jsx-Mutation: runQueryresultSummarization: ", data);
       setSummaryMsg(data);
-      console.log("NewBrewsPage.jsx-Mutation: runQueryresultSummarization: ", summaryMsg);
+      // console.log("NewBrewsPage.jsx-Mutation: runQueryresultSummarization: ", summaryMsg);
     },
   });
 
   const handleRunQuery = (e) => {
     //e.preventDefault();
-    console.log("NewBrewersPage.jsx: handleRunQuery");
+    // console.log("NewBrewersPage.jsx: handleRunQuery");
 
     // Standardize this sucker - high priority
     const promptMessage = {
@@ -142,15 +144,15 @@ function NewBrewsPage({ modelsList, firstName, tokensAvailable }) {
       query: message,
       sqlStatement: responseSQL,
     };
-    console.log("NewBrewersPage.jsx: Before executeQueries. Value of query \n", promptMessage.sqlStatement);
-
+    // console.log("NewBrewersPage.jsx: Before executeQueries. Value of query \n", promptMessage.sqlStatement);
+    setSQLResults([]);
     runSQLQuery(promptMessage);
-    console.log("NewBrewersPage.jsx: after executeQueries. Value of query \n", sqlResults);
+    // console.log("NewBrewersPage.jsx: after executeQueries. Value of query \n", sqlResults);
   };
 
   const handleSaveResults = (e) => {
     //e.preventDefault();
-    console.log("NewBrewersPage.jsx: Summarize results \n");
+    // console.log("NewBrewersPage.jsx: Summarize results \n");
     // Standardize this sucker - high priority
     const promptMessage = {
       userId: userId,
@@ -169,7 +171,7 @@ function NewBrewsPage({ modelsList, firstName, tokensAvailable }) {
 
   const handleSummarizeResults = (e) => {
     //e.preventDefault();
-    console.log("NewBrewersPage.jsx: Summarize results \n");
+    // console.log("NewBrewersPage.jsx: Summarize results \n");
     // Standardize this sucker - high priority
     const promptMessage = {
       provider: provider,
@@ -187,7 +189,9 @@ function NewBrewsPage({ modelsList, firstName, tokensAvailable }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log("NewBrewersPage.jsx: Before mutate. Value of query \n", message);
+    setResponseSQL("Loading...");
+    setSQLResults([]);
+    // console.log("NewBrewersPage.jsx: Before mutate. Value of query \n", message);
 
     //----------------------------------------------
     // Assuming you want to match this id
@@ -214,9 +218,9 @@ function NewBrewsPage({ modelsList, firstName, tokensAvailable }) {
     runPromptQuery(promptMessage);
   };
 
-  console.log(
-    "NewBrewsPage.jsx: Rendering NewBrewsPage: ----------------------------end------------------------------- "
-  );
+  // console.log(
+  //   "NewBrewsPage.jsx: Rendering NewBrewsPage: ----------------------------end------------------------------- "
+  // );
   return (
     <div>
       <div className="flex flex-row items-center justify-between px-20">
@@ -267,7 +271,7 @@ function NewBrewsPage({ modelsList, firstName, tokensAvailable }) {
               ></textarea>
               <div className="m-2 space-x-4">
                 <button className="btn btn-sm btn-primary min-w-32" type="submit" disabled={isPending_PQ}>
-                  {isPending_PQ ? "Please wait..." : "Submit"}
+                  {isPending_PQ ? <span className="loading loading-spinner">Running...</span> : "Submit"}
                 </button>
                 <button className="btn btn-sm min-w-28" type="reset">
                   Reset
@@ -291,7 +295,7 @@ function NewBrewsPage({ modelsList, firstName, tokensAvailable }) {
                 onClick={(e) => handleRunQuery()}
                 disabled={isPending_SQL}
               >
-                {isPending_SQL ? "Please wait..." : "Run Query"}
+                {isPending_SQL ? <span className="loading loading-spinner">Running...</span> : "Run Query"}
               </button>
             </div>
 
@@ -307,14 +311,14 @@ function NewBrewsPage({ modelsList, firstName, tokensAvailable }) {
               <div className="flex flex-col md:w-1/6">
                 <h2 className="text-lg font-semibold px-4">SQL Results</h2>
                 <button className="btn btn-primary btn-sm mt-4" type="button" onClick={(e) => handleSaveResults()}>
-                  Save
+                  {isPending_SR ? "Processing .." : "Save"}
                 </button>
                 <button className="btn btn-primary btn-sm mt-4" type="button" onClick={(e) => handleSummarizeResults()}>
                   Summarize
                 </button>
               </div>
               <div className="md:w-5/6 md:px-8 md:mt-2">
-                <SQLTable queryResultsJson data={sqlResults} />
+                <SQLTable data={sqlResults} />
               </div>
             </div>
           </div>

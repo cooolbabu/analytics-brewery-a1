@@ -1,16 +1,48 @@
 "use server";
 import pg from "pg";
+import { generateSimpleGUID } from "../baseUtitls";
 
 /**
+ * Handles standard error scenarios and returns an error object.
  *
- * @returns {Pool}
+ * @param {string} errorMsg - The error message to be included in the error object.
+ * @returns {Object} - An error object containing a unique identifier and the error message.
+ */
+function standardErrorHandling(errorMsg, error = null) {
+  const errorGUID = generateSimpleGUID();
+  // console.log(errorGUID, error);
+
+  let errorString = `Message: ${error.message}
+    Error Hint: ${error.hint}
+    Error code: ${error.code}
+    Error detail: ${error.detail}
+    Error position: ${error.position}
+    Error schema: ${error.schema}
+    Error table: ${error.table}
+    Error column: ${error.column}
+    Error where: ${error.where}
+    Error constraint: ${error.constraint}
+    Error file: ${error.file}
+    Error line: ${error.line}
+    Error routine: ${error.routine}
+    Error GUID: ${errorGUID}
+    Error Stack: ${error.stack.slice(0, 400)}
+    `;
+
+  return { errorMsg: errorString, errorGUID: errorGUID };
+}
+
+/**
+ * Creates a Supabase client pool for connecting to the database.
+ * @returns {Promise<Pool>} A promise that resolves to the Supabase client pool.
+ * @throws {Error} If the required environment variables are not set.
  */
 export async function createSupabaseClient() {
   const { Pool } = pg;
   try {
-    // console.log("createSupabaseClient: env details", process.env.DB_USER, process.env.DB_HOST, process.env.DB_NAME);
+    console.log("createSupabaseClient(): env details", process.env.DB_USER, process.env.DB_HOST, process.env.DB_NAME);
     if (!process.env.DB_USER || !process.env.DB_HOST || !process.env.DB_NAME || !process.env.DB_PASSWORD) {
-      throw new Error("Environment variables not set");
+      throw new Error("createSupabaseClient() Environment variables not set");
     }
     if (!globalThis.supabaseClientPool) {
       globalThis.supabaseClientPool = new Pool({
@@ -25,12 +57,17 @@ export async function createSupabaseClient() {
       });
     }
   } catch (error) {
-    console.log(error);
-    return { error: "createSupabaseClient()::Connection refused" };
+    const errObject = standardErrorHandling(error.message, error);
+    return errObject;
   }
   return globalThis.supabaseClientPool;
 }
 
+/**
+ * Displays the environment variables and executes a SQL query using Supabase client.
+ * Used for testing the connection to the database.
+ * @returns {string} A message indicating the result of displaying environment variables.
+ */
 export async function displayEnvironmentVariables() {
   console.log("displayEnvironmentVariables Environment Variables:");
   console.log("DB_USER:", process.env.DB_USER);
@@ -45,8 +82,8 @@ export async function displayEnvironmentVariables() {
     await client.release();
     console.log("displayEnvironmentVariables: sqlResult ", sqlResult);
   } catch (error) {
-    console.error("Error in displayEnvironmentVariables: ", error);
-    return "Failed to display environment variables due to error";
+    const errObject = standardErrorHandling("QueryDataFromSupabase()::Something went wrong", error);
+    return errObject;
   }
 
   return "Environment Variables displayed in console";
@@ -54,13 +91,17 @@ export async function displayEnvironmentVariables() {
 
 /**
  * Queries data from Supabase.
- * @param {string} queryStr - The SQL query string.
+ *
+ * @param {string} queryStr - The SQL query string to execute.
  * @param {string} [format="sqlRows"] - The format of the returned data. Possible values are "sqlRows" and "json".
- * @returns {Promise<Array<Object>>|Promise<string>|Promise<{error: string}>} - The queried data in the specified format, or an error object if something went wrong.
+ * @returns {Promise<Object>} The result of the query.
+ * @property {string|boolean} status - The status of the query. If "success", the query was successful. If false, an error occurred.
+ * @property {number} noOfRows - The number of rows returned by the query on success.
+ * @property {string|Array<Object>} message - Query result rows as an array on success. Error message string on failure.
  */
 export async function QueryDataFromSupabase(queryStr, format = "sqlRows") {
   try {
-    await new Promise((resolve) => setTimeout(resolve, 3000)); // Add a 3-second delay
+    //await new Promise((resolve) => setTimeout(resolve, 3000)); // Add a 3-second delay
     // console.log("QueryDataFromSupabase: queryStr", queryStr);
     // console.log("QueryDataFromSupabase: format", format);
 
@@ -82,20 +123,34 @@ export async function QueryDataFromSupabase(queryStr, format = "sqlRows") {
 
     if (format === "sqlRows") {
       if (sqlResult.rowCount === 0) {
-        return null;
-      } else return sqlResult.rows;
+        return { status: "success", noOfRows: 0, message: "No results to display" };
+      } else return { status: true, noOfRows: sqlResult.rowCount, message: sqlResult.rows };
     } else if (format === "json") {
       const jsonObject = JSON.stringify(sqlResult.rows);
-      // console.log("QueryDataFromSupabase: jsonObject", jsonObject);
-      return jsonObject;
+      //console.log("QueryDataFromSupabase: jsonObject", jsonObject);
+      return {
+        status: "success",
+        noOfRows: 0,
+        message: "JSON object request cannot be satisfied at the moment. TODO: Implement logic",
+      };
     }
   } catch (error) {
-    console.log(error);
-    return { error: "QueryDataFromSupabase()::Something went wrong" };
+    const errObject = standardErrorHandling("QueryDataFromSupabase()::Something went wrong", error);
+    //console.log("QueryDataFromSupabase: errObject", errObject);
+    return { status: false, noOfRows: 0, message: errObject.errorMsg };
   }
 }
 
+/**
+ * Inserts a row into the Supabase database using the provided query string and values.
+ *
+ * @param {string} queryStr - The SQL query string to execute.
+ * @param {Array} values - The values to be used in the query.
+ * @returns {Promise} A promise that resolves to the result of the SQL query.
+ *                    If an error occurs, it resolves to an object with an 'error' property.
+ */
 export async function InsertRowSupabase(queryStr, values) {
+  await new Promise((resolve) => setTimeout(resolve, 3000)); // Add a 3-second delay
   try {
     const client = await createSupabaseClient();
     // console.log("InsertRowSupabase: client", queryStr, values);
@@ -103,11 +158,19 @@ export async function InsertRowSupabase(queryStr, values) {
     // console.log("InsertRowSupabase: sqlResult ", sqlResult);
     return sqlResult;
   } catch (error) {
-    console.log(error);
-    return { error: "InsertRowSupabase()::Something went wrong" };
+    const errObject = standardErrorHandling("QueryDataFromSupabase()::Something went wrong", error);
+
+    return errObject;
   }
 }
 
+/**
+ * Updates a row in the Supabase database.
+ *
+ * @param {string} queryStr - The SQL query string to execute.
+ * @param {Array} values - The values to be used in the query.
+ * @returns {Promise<Object>} - A promise that resolves to the result of the update operation.
+ */
 export async function UpdateRowSupabase(queryStr, values) {
   try {
     const client = createSupabaseClient();
@@ -116,7 +179,7 @@ export async function UpdateRowSupabase(queryStr, values) {
     // console.log("UpdateRowSupabase: sqlResult ", sqlResult);
     return sqlResult;
   } catch (error) {
-    console.log(error);
-    return { error: "UpdateRowSupabase()::Something went wrong" };
+    const errObject = standardErrorHandling("QueryDataFromSupabase()::Something went wrong", error);
+    return errObject;
   }
 }
