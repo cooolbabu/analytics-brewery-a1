@@ -52,12 +52,12 @@ export async function sayHello(message) {
  */
 export async function generatePromptResponseTypeSQL(message) {
   // console.log("Hello from the server: ", message);
-  console.log("actions.js-generatePromptResponse: Provider: ", message.provider);
-  console.log("actions.js-generatePromptResponse: Model: ", message.model);
-  console.log("actions.js-generatePromptResponse: Persona: ", message.persona);
-  console.log("actions.js-generatePromptResponse: Instructions: ", message.instructions);
-  console.log("actions.js-generatePromptResponse: Query: ", message.query);
-  console.log("actions.js-generatePromptResponse: MaxTokens: ", message.maxTokens);
+  // console.log("actions.js-generatePromptResponse: Provider: ", message.provider);
+  // console.log("actions.js-generatePromptResponse: Model: ", message.model);
+  // console.log("actions.js-generatePromptResponse: Persona: ", message.persona);
+  // console.log("actions.js-generatePromptResponse: Instructions: ", message.instructions);
+  // console.log("actions.js-generatePromptResponse: Query: ", message.query);
+  // console.log("actions.js-generatePromptResponse: MaxTokens: ", message.maxTokens);
 
   // callOpenAI fucntion from callOpenAI.js
   let response = "";
@@ -78,7 +78,7 @@ export async function generatePromptResponseTypeSQL(message) {
   }
 
   response = await callMistral("mistral-small-latest", "SQLAssistant", " ", response);
-  console.log("actions.js-generatePromptResponse: ", response);
+  // console.log("actions.js-generatePromptResponse: ", response);
 
   return response;
 }
@@ -169,7 +169,7 @@ export async function getABPromptsById(id) {
     //await new Promise((resolve) => setTimeout(resolve, 3000)); // Add a 3-second delay
 
     const queryResult = await QueryDataFromSupabase(message.sqlStatement, "sqlRows");
-    console.log("getAllABPrompts: sqlResult ", queryResult);
+    // console.log("getAllABPrompts: sqlResult ", queryResult);
 
     return queryResult;
   } catch (error) {
@@ -209,7 +209,7 @@ export async function executeQuerySummarization(message) {
 // Use Chat history
 //
 export const generateChatResponse = async (chatMessages) => {
-  console.log("[actions.js] Chatmessages: ", chatMessages);
+  // console.log("[actions.js] Chatmessages: ", chatMessages);
 
   try {
     const response = await openai.chat.completions.create({
@@ -218,8 +218,8 @@ export const generateChatResponse = async (chatMessages) => {
       temperature: 0,
     });
 
-    console.log(response.choices[0].message);
-    console.log("Returning from generateChatResponse");
+    // console.log(response.choices[0].message);
+    // console.log("Returning from generateChatResponse");
     return response.choices[0].message;
   } catch (error) {
     return null;
@@ -294,13 +294,13 @@ export async function generateTourResponse({ city, country }) {
  * @returns {Promise<void>} - A promise that resolves when the prompt results are saved.
  */
 export async function SaveCraftersPromptResults({ promptTemplateId, userId, promptTemplate, promptTemplateDesc }) {
-  console.log(
-    "actions.js: saveCraftersPromptResults invoked: ",
-    promptTemplateId,
-    userId,
-    promptTemplate,
-    promptTemplateDesc
-  );
+  // console.log(
+  //   "actions.js: saveCraftersPromptResults invoked: ",
+  //   promptTemplateId,
+  //   userId,
+  //   promptTemplate,
+  //   promptTemplateDesc
+  // // );
 
   let queryStr = "";
   let values = [];
@@ -316,9 +316,9 @@ export async function SaveCraftersPromptResults({ promptTemplateId, userId, prom
           DO UPDATE SET prompt_template = $3, prompt_template_desc = $4 RETURNING prompt_template_id;  `;
       values = [promptTemplateId, userId, promptTemplate, promptTemplateDesc];
     }
-    console.log("\n\nactions.js: Before InsertRowSupabase: ");
+    // console.log("\n\nactions.js: Before InsertRowSupabase: ");
     const result = await InsertRowSupabase(queryStr, values);
-    console.log("\n\nactions.js: After InsertRowSupabase: ", result);
+    // console.log("\n\nactions.js: After InsertRowSupabase: ", result);
 
     if (result.rowCount > 0) {
       return { success: true, data: "Succesfully saved the prompt details" };
@@ -326,8 +326,8 @@ export async function SaveCraftersPromptResults({ promptTemplateId, userId, prom
       return { success: false, error: result.error };
     }
   } catch (error) {
-    console.log("actions.js: saveCraftersPromptResults: ", result.error);
-    console.log("actions.js: saveCraftersPromptResults: ", result);
+    // console.log("actions.js: saveCraftersPromptResults: ", result.error);
+    // console.log("actions.js: saveCraftersPromptResults: ", result);
     return {
       success: false,
       error: error.message || "SaveCraftersPromptResults: Action failed to add a row to database",
@@ -335,10 +335,21 @@ export async function SaveCraftersPromptResults({ promptTemplateId, userId, prom
   }
 }
 
-export const getAllPromptTemplates = async ({ searchValue, userId }) => {
-  console.log("actions.js-getAllPromptTemplates: userId: ", userId, " searchValue: ", searchValue);
+export const getAllPromptExecutionHistory = async ({ searchValue, userId }) => {
+  // console.log("actions.js-getAllPromptTemplates: userId: ", userId);
+
   const sqlResult = await QueryDataFromSupabase(
-    `SELECT * FROM ab_prompt_template WHERE user_id = '%${userId}%' OR prompt_template ILIKE '%${searchValue}%'`
+    `SELECT * FROM ab_prompt_execution_history WHERE user_id = '${userId}' order by created_at desc`
+  );
+
+  // console.log("actions.js-getAllPromptExecutionHistory: sqlResult: ", sqlResult);
+  return sqlResult;
+};
+
+export const getAllPromptTemplates = async ({ searchValue, userId }) => {
+  // console.log("actions.js-getAllPromptTemplates: userId: ", userId, " searchValue: ", searchValue);
+  const sqlResult = await QueryDataFromSupabase(
+    `SELECT * FROM ab_prompt_template WHERE user_id = '${userId}' OR prompt_template ILIKE '%${searchValue}%'`
   );
   return sqlResult;
 };

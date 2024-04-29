@@ -190,6 +190,7 @@ function NewBrewsPage({ modelsList, firstName, tokensAvailable }) {
   const handleSubmit = (e) => {
     e.preventDefault();
     setResponseSQL("Loading...");
+    setSQLResults([]);
     // console.log("NewBrewersPage.jsx: Before mutate. Value of query \n", message);
 
     //----------------------------------------------
@@ -270,7 +271,7 @@ function NewBrewsPage({ modelsList, firstName, tokensAvailable }) {
               ></textarea>
               <div className="m-2 space-x-4">
                 <button className="btn btn-sm btn-primary min-w-32" type="submit" disabled={isPending_PQ}>
-                  {isPending_PQ ? "Please wait..." : "Submit"}
+                  {isPending_PQ ? <span className="loading loading-spinner">Running...</span> : "Submit"}
                 </button>
                 <button className="btn btn-sm min-w-28" type="reset">
                   Reset
@@ -294,7 +295,7 @@ function NewBrewsPage({ modelsList, firstName, tokensAvailable }) {
                 onClick={(e) => handleRunQuery()}
                 disabled={isPending_SQL}
               >
-                {isPending_SQL ? "Please wait..." : "Run Query"}
+                {isPending_SQL ? <span className="loading loading-spinner">Running...</span> : "Run Query"}
               </button>
             </div>
 

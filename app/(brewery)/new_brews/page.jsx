@@ -12,8 +12,8 @@ async function BrewsPage() {
   console.log("New Brews Page ====");
   console.log("Email address: ", user.emailAddresses[0].emailAddress);
   console.log("First Name: ", user.firstName, "Last Name: ", user.lastName);
-  console.log("ImageUrl: ", user.imageUrl);
-  console.log("Current Token count: ", userProfile[0].tokensAvailable);
+  // console.log("ImageUrl: ", user.imageUrl);
+  // console.log("Current Token count: ", userProfile[0].tokensAvailable);
   const queryClient = new QueryClient();
   return (
     <div>
