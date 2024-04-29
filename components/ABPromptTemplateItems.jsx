@@ -11,7 +11,7 @@ function ABPromptTemplateItems({ data, handleOptionSelection }) {
 
   return (
     <div className="join join-vertical w-full">
-      {data.map((pTemplate) => {
+      {data.message.map((pTemplate) => {
         return (
           <div className="collapse collapse-arrow join-item border border-base-300" key={pTemplate.prompt_template_id}>
             <input type="radio" name="my-accordion-4" />
