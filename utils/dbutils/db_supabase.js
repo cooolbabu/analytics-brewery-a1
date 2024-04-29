@@ -10,7 +10,7 @@ import { generateSimpleGUID } from "../baseUtitls";
  */
 function standardErrorHandling(errorMsg, error = null) {
   const errorGUID = generateSimpleGUID();
-  console.log(errorGUID, error);
+  // console.log(errorGUID, error);
 
   let errorString = `Message: ${error.message}
     Error Hint: ${error.hint}
