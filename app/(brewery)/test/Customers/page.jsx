@@ -4,7 +4,7 @@ import { QueryDataFromSupabase } from "@/lib/db";
 import { useQuery } from "@tanstack/react-query";
 
 function CustomerPage() {
-  let qStr = 'SELECT * FROM "Customers" LIMIT 5;';
+  let qStr = 'SELECT * FROM "Customer" LIMIT 5;';
   const x = useQuery({ queryKey: ["customers"], queryFn: QueryDataFromSupabase(qStr, "sqlRows") });
 
   console.log("Fetching customers from Supabase:", customers);
