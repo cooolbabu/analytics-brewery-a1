@@ -65,26 +65,8 @@ export async function generateSQLResultsSummarization(modelName, persona, instru
 
 async function loadPersonaAndGenerateChatResponse(modelName, persona, instructions, promptMessage) {
   try {
-    // const filePath = path.join("./", "assets", "ChinookDBER.txt");
-    // const fileContent = fs.readFileSync(filePath, "utf-8");
-    // //console.log("callOpenAI.js-loadPersonaAndChatResponse: ", instructions + "\n" + fileContent);
-    let fileContent = "  ";
-
-    console.log("\nFile Path1 =========>");
-    const filePath1 = path.join("./");
-    const files1 = fs.readdirSync(filePath1);
-    for (const file of files1) console.log(file);
-
-    console.log("\nFile Path2 =========>");
-    const filePath2 = path.join("./", "assets");
-    const files2 = fs.readdirSync(filePath2);
-    for (const file of files2) console.log(file);
-
-    console.log("\nFile Path3 =========>");
-    const filePath3 = path.join("./", "app");
-    const files3 = fs.readdirSync(filePath3);
-    for (const file of files3) console.log(file);
-
+    const filePath = path.join("./", "content", "ChinookDBER.txt");
+    const fileContent = fs.readFileSync(filePath, "utf-8");
     //console.log("callOpenAI.js-loadPersonaAndChatResponse: ", instructions + "\n" + fileContent);
 
     const response = await openai.chat.completions.create({
