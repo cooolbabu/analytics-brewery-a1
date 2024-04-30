@@ -1,7 +1,6 @@
 "use server";
 import OpenAI from "openai";
-import formatter from "prettier";
-import prisma from "./db";
+
 import { callOpenAI, generateSQLResultsSummarization } from "./callOpenAI";
 import { QueryDataFromSupabase, InsertRowSupabase } from "@/utils/dbutils/db_supabase";
 import { callMistral } from "./mistral/callMistral";
