@@ -1,6 +1,7 @@
 "use server";
 
 import OpenAI from "openai";
+import { QueryDataFromSupabase } from "./dbutils/db_supabase";
 const fs = require("fs");
 const path = require("path");
 
@@ -65,9 +66,13 @@ export async function generateSQLResultsSummarization(modelName, persona, instru
 
 async function loadPersonaAndGenerateChatResponse(modelName, persona, instructions, promptMessage) {
   try {
-    const filePath = path.join("./", "content", "ChinookDBER.txt");
-    const fileContent = fs.readFileSync(filePath, "utf-8");
+    // const filePath = path.join("./", "content", "ChinookDBER.txt");
+    // const fileContent = fs.readFileSync(filePath, "utf-8");
     //console.log("callOpenAI.js-loadPersonaAndChatResponse: ", instructions + "\n" + fileContent);
+
+    const sqlStatement = "SELECT * FROM ab_persona WHERE persona_id = '" + persona + "';";
+    const queryResult = await QueryDataFromSupabase(sqlStatement, "sqlRows");
+    fileContent = queryResult.message[0].persona;
 
     const response = await openai.chat.completions.create({
       messages: [

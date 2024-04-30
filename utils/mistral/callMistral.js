@@ -1,6 +1,7 @@
 "use server";
 
 import MistralClient from "@mistralai/mistralai";
+import { QueryDataFromSupabase } from "../dbutils/db_supabase";
 const fs = require("fs");
 const path = require("path");
 
@@ -63,8 +64,11 @@ export async function GenerateChatResponse({ modelName, persona, promptTemplate,
     switch (persona) {
       case "ChinookAssistant":
         // console.log("Loading ChinookAssistant persona");
-        const filePath = path.join("./", "assets", "ChinookDBER.txt");
-        personaContent = fs.readFileSync(filePath, "utf-8");
+        // const filePath = path.join("./", "assets", "ChinookDBER.txt");
+        // personaContent = fs.readFileSync(filePath, "utf-8");
+        const sqlStatement = "SELECT * FROM ab_persona WHERE persona_id = '" + persona + "';";
+        const queryResult = await QueryDataFromSupabase(sqlStatement, "sqlRows");
+        personaContent = queryResult.message[0].persona;
         break;
       case "SQLAssistant":
         personaContent = `

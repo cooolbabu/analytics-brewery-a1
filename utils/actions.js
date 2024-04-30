@@ -338,7 +338,8 @@ export const getAllPromptExecutionHistory = async ({ searchValue, userId }) => {
   // console.log("actions.js-getAllPromptTemplates: userId: ", userId);
 
   const sqlResult = await QueryDataFromSupabase(
-    `SELECT * FROM ab_prompt_execution_history WHERE user_id = '${userId}' order by created_at desc`
+    `SELECT * FROM ab_prompt_execution_history order by created_at desc`
+    // `SELECT * FROM ab_prompt_execution_history WHERE user_id = '${userId}' order by created_at desc`
   );
 
   // console.log("actions.js-getAllPromptExecutionHistory: sqlResult: ", sqlResult);

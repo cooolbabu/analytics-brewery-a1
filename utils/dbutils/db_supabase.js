@@ -119,7 +119,7 @@ export async function QueryDataFromSupabase(queryStr, format = "sqlRows") {
     //   sqlResult.rows.length
     // );
 
-    // console.log("QueryDataFromSupabase: sqlResult count ", sqlResult.rowCount);
+    console.log("QueryDataFromSupabase: sqlResult count ", sqlResult.rowCount);
 
     if (format === "sqlRows") {
       if (sqlResult.rowCount === 0) {
