@@ -125,7 +125,7 @@ function BrewCraftersComponent({ modelsList, userProfile }) {
   return (
     <div>
       <div className="grid grid-cols-[auto,1fr,auto] items-center justify-items-center mb-2 px-10">
-        <h2 className="px-4 align-baseline">Hello {userProfile[0].firstName} </h2>
+        <h2 className="px-4 align-baseline">Hello {userProfile.message[0].firstName} </h2>
         <p className="px-4">Let&apos;s mix some query prompts!</p>
         <input type="password" placeholder="Bring your own API Key" className="input" />
       </div>

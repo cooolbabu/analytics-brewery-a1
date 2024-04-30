@@ -41,15 +41,15 @@ function MyBrewsList() {
   });
 
   if (!isPendingTD) {
-    console.log("MyBrewsList: pTemplatesData", pTemplatesData);
-    console.log("MyBrewsList: pTemplatesData status", pTemplatesData.status);
+    // console.log("MyBrewsList: pTemplatesData", pTemplatesData);
+    // console.log("MyBrewsList: pTemplatesData status", pTemplatesData.status);
     //   console.log("MyBrewsList: pTemplatesData", pTemplatesData.noOfRows);
     // headers = Object.keys(pTemplatesData.message[0]);
   }
 
   const handleShowModalEvent = (title, message, type) => {
     {
-      console.log("SQL Statement: ", message);
+      // console.log("SQL Statement: ", message);
       setModalTitle(title);
       setDisplaySQLStatement(message);
       document.getElementById("my_modal_box").showModal();
@@ -61,7 +61,7 @@ function MyBrewsList() {
       {!isPendingTD ? <div>{pTemplatesData.noOfRows}</div> : null}
 
       <div className="overflow-x-auto">
-        {!isPendingTD ? (
+        {!isPendingTD && pTemplatesData.noOfRows > 0 ? (
           <table className="table table-xs table-zebra-zebra table-pin-rows">
             <thead>
               <tr>
@@ -85,24 +85,24 @@ function MyBrewsList() {
                     {/* {row["prompt_query"]} */}
                     <button
                       type="button"
-                      className="btn btn-xs sm:btn-sm md:btn-md lg:btn-lg"
+                      className="btn btn-xs sm:btn-md md:btn-md lg:btn-md bg-green-500"
                       onClick={() => {
                         handleShowModalEvent("Prompt ", row["prompt_query"]);
                       }}
                     >
-                      <span className="text-sm">Show Prompt</span>
+                      <span className="text-xs">Show Prompt</span>
                     </button>
                   </td>
 
                   <td className="max-w-36 text-wrap">
                     <button
                       type="button"
-                      className="btn btn-xs sm:btn-sm md:btn-md lg:btn-lg"
+                      className="btn btn-xs sm:btn-md md:btn-md lg:btn-md bg-blue-500"
                       onClick={() => {
                         handleShowModalEvent("SQL Statement", row["sql_statement"]);
                       }}
                     >
-                      <span className="text-sm">Show SQL</span>
+                      <span className="text-xs">Show SQL</span>
                     </button>
                   </td>
                   <td className="max-w-16 text-wrap">
@@ -116,7 +116,7 @@ function MyBrewsList() {
                           handleShowModalEvent("SQL error message", row["sql_err_message"]);
                         }}
                       >
-                        <span className="text-sm">Failure</span>
+                        <span className="text-xs">Failure</span>
                       </button>
                     )}
                   </td>

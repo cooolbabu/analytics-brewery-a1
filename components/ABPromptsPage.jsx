@@ -11,7 +11,7 @@ function ABPromptsPage() {
     queryFn: () => getAllABPrompts(searchValue),
   });
 
-  console.log("ABPromptsPage: data", data);
+  // console.log("ABPromptsPage: data", data);
 
   return (
     <>

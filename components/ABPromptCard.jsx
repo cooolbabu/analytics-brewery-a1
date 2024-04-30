@@ -2,7 +2,7 @@ import Link from "next/link";
 
 function ABPromptCard({ promptRecord }) {
   const { prompt_id, user_id, provider, model, persona, prompt_msg, tags } = promptRecord;
-  console.log("ABPromptCard: ", promptRecord);
+  // console.log("ABPromptCard: ", promptRecord);
 
   return (
     <Link href={`/abprompt-cards/${prompt_id}`} className="card card-compact rounded-xl bg-base-100">

@@ -20,11 +20,9 @@ function ABPromptTemplateList({ onPromptTemplateSelection }) {
   //console.log("ABPromptTemplateList: searchvalue", searchValue, debouncedSearchValue);
 
   const handleOptionSelection = (value) => {
-    // const selectedValue = event.target.value;
-    // console.log("Selected event: ", event);
-    //console.log("Selected Value: ", value);
-    //console.log("Selected data: ", data);
-    const selectedPromptData = data.filter((item) => item.prompt_template_id === value);
+    console.log("Selected Value: ", value);
+    console.log("Selected data: ", data);
+    const selectedPromptData = data.message.filter((item) => item.prompt_template_id === value);
     //console.log("selectedPromptData : ", selectedPromptData[0]); // Prompt template id is unique
     // onPromptTemplateSelection(selectedPromptData);
 

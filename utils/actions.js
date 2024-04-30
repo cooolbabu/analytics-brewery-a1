@@ -147,7 +147,7 @@ export async function executeQueries(message) {
 
 export async function getAllABPrompts() {
   const sqlStatement = "SELECT * FROM ab_user_prompts LIMIT 25";
-  console.log("actions.js-executeQuery: SQL Query: ", sqlStatement);
+  // console.log("actions.js-executeQuery: SQL Query: ", sqlStatement);
 
   try {
     //await new Promise((resolve) => setTimeout(resolve, 3000)); // Add a 3-second delay

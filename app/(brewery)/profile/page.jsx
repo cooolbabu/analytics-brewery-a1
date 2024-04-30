@@ -12,10 +12,7 @@ async function ProfilePage() {
   console.log("Email address: ", user.emailAddresses[0].emailAddress);
   console.log("First Name: ", user.firstName, "Last Name: ", user.lastName);
   console.log("ImageUrl: ", user.imageUrl);
-  console.log(
-    "Date Registered ======",
-    new Date(userProfile[0].dateRegistered).toLocaleDateString()
-  );
+  // console.log("Date Registered ======", new Date(userProfile[0].dateRegistered).toLocaleDateString());
 
   return (
     <div>
@@ -32,29 +29,24 @@ async function ProfilePage() {
         />
         <div className="m-8">
           <p className="mb-1 text-2xl">
-            {userProfile[0].firstName}&nbsp; {userProfile[0].lastName}
+            {userProfile.message[0].first_name}&nbsp; {userProfile.message[0].last_name}
           </p>
           <p className="mb-1">{user.emailAddresses[0].emailAddress}</p>
+          <p className="mb-1">Free Tokens used : {userProfile.message[0].current_token_count}</p>
+          <p className="mb-1">Free Available Tokens: {userProfile.message[0].tokens_available}</p>
           <p className="mb-1">
-            Free Tokens used : {userProfile[0].currentTokenCount}
-          </p>
-          <p className="mb-1">
-            Free Available Tokens: {userProfile[0].tokensAvailable}
-          </p>
-          <p className="mb-1">
-            Date Registered:{" "}
-            {new Date(userProfile[0].dateRegistered).toLocaleDateString()}
+            Date Registered: {new Date(userProfile.message[0].date_registered).toLocaleDateString()}
           </p>
         </div>
       </div>
       {/* Show token status section */}
-      <UserVendorModelsStatus
+      {/* <UserVendorModelsStatus
         userProfile={userProfile[0]}
-      ></UserVendorModelsStatus>
+      ></UserVendorModelsStatus> */}
       {/* Show token status section */}
       <h2 className="mt-8">
-        Turn this section into a button &quot;Manage Profile&quot; that will
-        popup user profile. After making this component a client side component
+        Turn this section into a button &quot;Manage Profile&quot; that will popup user profile. After making this
+        component a client side component
       </h2>
       <UserProfile />
     </div>

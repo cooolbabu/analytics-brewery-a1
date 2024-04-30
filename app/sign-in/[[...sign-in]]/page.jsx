@@ -1,6 +1,7 @@
 import { SignIn } from "@clerk/nextjs";
 
 function SignInPage() {
+  console.log("SignInPage: SignInPage");
   return (
     <div className="min-h-screen flex justify-center items-center">
       <SignIn />

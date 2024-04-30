@@ -75,3 +75,16 @@ CREATE TABLE ab_prompt_execution_history (
     tags varchar(255),
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
+
+DROP TABLE IF EXISTS ab_user_profile;
+CREATE TABLE ab_user_profile (
+    user_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    email_id VARCHAR(255) NOT NULL,
+    first_name varchar(255),
+    last_name varchar(255),
+    date_registered TIMESTAMP,
+    current_token_count INTEGER,
+    tokens_available INTEGER,
+    tokens_availablity INTEGER,
+    tokens_added_history TEXT
+);

@@ -6,14 +6,16 @@ import { HydrationBoundary, QueryClient, dehydrate } from "@tanstack/react-query
 
 async function BrewsPage() {
   const user = await currentUser();
-  const userProfile = await getUserProfile(user.emailAddresses[0].emailAddress);
+  const userProfile = await getUserProfile(user.emailAddresses[0].emailAddress, user.id, user.firstName, user.lastName);
   const modelsList = await getProviderModels();
 
   console.log("New Brews Page ====");
   console.log("Email address: ", user.emailAddresses[0].emailAddress);
   console.log("First Name: ", user.firstName, "Last Name: ", user.lastName);
-  // console.log("ImageUrl: ", user.imageUrl);
-  // console.log("Current Token count: ", userProfile[0].tokensAvailable);
+  // console.log("ImageUrl: ", user);
+  // console.log("Current Token count: ", userProfile.message[0].tokens_available);
+
+  console.log("User profile id: ", user.id);
   const queryClient = new QueryClient();
   return (
     <div>
@@ -22,7 +24,8 @@ async function BrewsPage() {
         <NewBrewsPage
           modelsList={modelsList}
           firstName={user.firstName}
-          tokensAvailable={userProfile[0].tokensAvailable}
+          tokensAvailable={3000}
+          // tokensAvailable={userProfile.message[0].tokens_available}
         />
       </HydrationBoundary>
     </div>
