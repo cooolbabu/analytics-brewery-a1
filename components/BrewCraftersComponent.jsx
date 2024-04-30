@@ -4,17 +4,19 @@ import ListDropdownComponent from "@/app/displayComponents/ListDropDownComponent
 import { listModelsByProvider } from "@/lib/LLMProvidersUtils";
 import { useEffect, useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { GenerateChatResponse } from "@/utils/mistral/callMistral";
+import { GenerateBrewCraftersResponseMistral, GenerateChatResponse } from "@/utils/mistral/callMistral";
 import { marked } from "marked";
 import { SaveCraftersPromptResults, getAllPromptTemplates } from "@/utils/actions";
 import { useAuth } from "@clerk/nextjs";
 import ABPromptTemplateList from "@/components/ABPromptTemplateList";
 
 function BrewCraftersComponent({ modelsList, userProfile }) {
-  const [provider, setProvider] = useState("Providers");
-  const [modelName, setModelName] = useState("Models");
-  const [personaName, setPersonaName] = useState("Personas");
-  const [promptTemplate, setPromptTemplate] = useState("Type your prompt template here ..");
+  const [provider, setProvider] = useState("Mistral");
+  const [modelName, setModelName] = useState("mistral-large-latest");
+  const [personaName, setPersonaName] = useState("Chinook");
+  const [promptTemplate, setPromptTemplate] = useState(
+    "Enter prompt template or use Load Prompt Template button to load one."
+  );
   const [promptTemplateDesc, setPromptTemplateDesc] = useState("Short description of the prompt template");
   const [promptTemplateId, setPromptTemplateId] = useState("");
   const [promptQuery, setPromptQuery] = useState("Enter your query here ...");
@@ -32,7 +34,7 @@ function BrewCraftersComponent({ modelsList, userProfile }) {
       prompt_template_id: "abc123",
       user_id: "user123rtu",
       prompt_template_desc: "Simple prompt description",
-      prompt_template: "Prompt Template",
+      prompt_template: "Enter prompt template or use Load Prompt Template button to load one.",
     },
   });
 
@@ -81,7 +83,7 @@ function BrewCraftersComponent({ modelsList, userProfile }) {
   } = useMutation({
     mutationFn: (saveParams) => SaveCraftersPromptResults(saveParams),
     onSuccess: (data_CPR) => {
-      console.log("saveCraftersPromptResultsMutation: ", data_CPR);
+      // console.log("saveCraftersPromptResultsMutation: ", data_CPR);
       if (!data_CPR || !data_CPR.success)
         toast.error("Something went wrong with saving the prompt template. Please try again.");
       else toast.success("Successfully save prompt template.");
@@ -99,17 +101,18 @@ function BrewCraftersComponent({ modelsList, userProfile }) {
     e.preventDefault();
     // console.log(
     //   "BrewCrafterComponent.jsx: Before mutate. Handle Submit clicked\n",
-    //   modelName + " " + personaName + " " + promptTemplate + " " + promptQuery
+    //   provider + " " + modelName + " " + personaName + " " + promptTemplate + " " + promptQuery
     // );
-    mistralChatInteraction({ modelName, personaName, promptTemplate, promptQuery });
+    setDisplayMessage("Processing ...");
+    brewCraftersInteraction({ provider, modelName, personaName, promptTemplate, promptQuery });
   };
 
   const {
-    mutate: mistralChatInteraction, // suffixing QRS
+    mutate: brewCraftersInteraction, // suffixing QRS
     isPending: isPendingMCI,
     data: dataMCI,
   } = useMutation({
-    mutationFn: (chatParams) => GenerateChatResponse(chatParams),
+    mutationFn: (chatParams) => GenerateBrewCraftersResponseMistral(chatParams),
     onSuccess: (data) => {
       if (!data) {
         toast.error("Something went wrong");
@@ -184,14 +187,14 @@ function BrewCraftersComponent({ modelsList, userProfile }) {
             <textarea
               className="textarea textarea-bordered md:w-1/2 text-xs"
               rows="3"
-              placeholder="Enter your prompt template here ..."
+              placeholder="Enter prompt template or use Load Prompt Template button to load one."
               value={promptTemplate}
               onChange={(e) => setPromptTemplate(e.target.value)}
             ></textarea>
             <textarea
               className="textarea textarea-bordered md:w-1/2 text-xs"
               rows="3"
-              placeholder="Enter your prompt query here ..."
+              placeholder="Ask your question here ..."
               onChange={(e) => setPromptQuery(e.target.value)}
             ></textarea>
           </div>

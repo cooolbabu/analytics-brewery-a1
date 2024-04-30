@@ -57,7 +57,7 @@ function MyBrewsList() {
   };
   return (
     <div>
-      <p>Hello</p>
+      <p>Hello - At the moment there is no filtering or pagination. You are seeing entire history</p>
       {!isPendingTD ? <div>{pTemplatesData.noOfRows}</div> : null}
 
       <div className="overflow-x-auto">

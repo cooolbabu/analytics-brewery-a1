@@ -212,6 +212,88 @@ async function deleteThread({ threadId }) {
   }
 }
 
+/**
+ * Generates a chat response using the specified model.
+ *
+ * @param {string} modelName - The name of the model to use for generating the chat response.
+ * @param {string} personaName - The persona for the chat response.
+ * @param {string} promptTemplate - The instructions for the chat response.
+ * @param {string} promptQuery - The prompt message for the chat response.
+ * @returns {Promise<string>} The generated chat response.
+ */
+
+export async function GenerateBrewCraftersResponseMistral({
+  provider,
+  modelName,
+  persona,
+  promptTemplate,
+  promptQuery,
+}) {
+  let personaContent = "";
+  let chatResponse = "";
+
+  if (provider !== "Mistral") return "Only Mistral provider is supported at the moment";
+
+  if (persona === "SQLAssistant") {
+    modelName = "mistral-small-latest";
+    // console.log("SQLAssistant persona selected - ", modelName);
+  }
+
+  try {
+    const model = "mistral-medium-latest";
+    modelName = modelName.trim() || model; // set default model
+
+    // TODO: Add conditions to load different personas
+    switch (persona) {
+      case "ChinookAssistant":
+        // console.log("Loading ChinookAssistant persona");
+        const filePath = path.join("./", "assets", "ChinookDBER.txt");
+        personaContent = fs.readFileSync(filePath, "utf-8");
+        break;
+      case "SQLAssistant":
+        personaContent = `
+        You are a SQL programmer who can write SQL code. You will given a message that may or may not contain SQL code with explanations.
+        If the message does not contain any SQL code, return the message as is.
+        If the message contains SQL code, then seperated the SQL code and explanations.
+        Summarize the explanations as comments. Return comments and SQL code without explanations. 
+        Important: Your repsonse should contain only SQL code and comments that can be executed in a SQL environment.      
+        `;
+        break;
+      default:
+        personaContent = persona;
+    }
+
+    let chatMessage = promptTemplate + "\n" + personaContent + "\n" + promptQuery;
+
+    // console.log("\n\nModel: ", modelName);
+    // console.log("Chat message to Mistral: ", chatMessage);
+    chatResponse = await client.chat({
+      messages: [{ role: "user", content: chatMessage }],
+      model: modelName,
+      temperature: 0,
+    });
+  } catch (error) {
+    console.log("callMistral.js - GenerateChatResponse", error);
+    chatResponse = "Unable to communicate with " + modelName + " model";
+    console.log("Returning from generateChatResponse: ", chatResponse, error.message);
+    return chatResponse;
+  }
+
+  // // console.log(response.choices[0].message.content);
+  // // const cleanedJsonString = response.choices[0].message.content.trim().replace(/^```json|```$/g, "");
+  // // console.log("cleanedJsonString: ", cleanedJsonString);
+  // // const responseStr = JSON.parse(cleanedJsonString).query;
+  // // console.log("responseStr: ", responseStr);
+  // // //console.log(JSON.parse(response.choices[0].message.content).query);
+  // // console.log("Returning from generateChatResponse");
+
+  // console.log("Response from Mistral -------------------------------------\n", chatResponse.choices[0].message.content);
+  let chatResponseStr = chatResponse.choices[0].message.content;
+  // console.log("call Mistral.js-chatResponseStr: \n", chatResponseStr);
+
+  return chatResponseStr;
+}
+
 function isValidJSON(str) {
   try {
     // Try parsing the string as JSON

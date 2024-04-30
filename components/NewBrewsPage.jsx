@@ -33,11 +33,13 @@ function NewBrewsPage({ modelsList, firstName, tokensAvailable }) {
   const { userId } = useAuth();
   const providerNames = modelsList.providers.map((provider) => provider.name);
   const personas = modelsList.personas.map((persona) => persona.assistant);
-  const [provider, setProvider] = useState("Providers");
-  const [modelName, setModelName] = useState("Models");
-  const [personaName, setPersonaName] = useState("Personas");
-  const [message, setMessage] = useState("Type your prompt here ...");
-  const [responseSQL, setResponseSQL] = useState('SELECT * FROM "Customers" limit 3;');
+  const [provider, setProvider] = useState("Mistral");
+  const [modelName, setModelName] = useState("mistral-large-latest");
+  const [personaName, setPersonaName] = useState("ChinookAssistant");
+  const [message, setMessage] = useState(
+    "Give me 5 sample queries about customers, sales and artists from the Chinook database"
+  );
+  const [responseSQL, setResponseSQL] = useState('SELECT * FROM "Customer" limit 3;');
 
   const [sqlResults, setSQLResults] = useState([]);
   const [summaryMsg, setSummaryMsg] = useState("Descriptive summarization displayed here...");
@@ -266,7 +268,7 @@ function NewBrewsPage({ modelsList, firstName, tokensAvailable }) {
               <textarea
                 className="textarea textarea-bordered"
                 rows="3"
-                placeholder="Type your prompt here ..."
+                placeholder="Give me 5 sample prompts about customers, sales and artists from the Chinook database"
                 onChange={(e) => setMessage(e.target.value)}
               ></textarea>
               <div className="m-2 space-x-4">
