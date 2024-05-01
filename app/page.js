@@ -12,6 +12,13 @@ export default function HomePage() {
         <Link href="/new_brews" className="btn btn-secondary  ">
           Let&apos;s mix some data
         </Link>
+        <div className="flex flex-col items-center justify-center min-w-96 gap-4 text-xs">
+          <p>
+            This is a portfolio app. It is not a real product. It is a demo of a data analytics tool. You can use either
+            Google or LinkedIn account to gain access. You personal information is neither requested or saved. I reserve
+            the right to block access anytime.
+          </p>
+        </div>
       </div>
       <Image src={analystBreweryImage} alt="Analytics Brewery" className="mb-6" />
     </div>
