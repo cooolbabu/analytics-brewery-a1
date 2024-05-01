@@ -6,6 +6,7 @@ import { QueryDataFromSupabase, InsertRowSupabase } from "@/utils/dbutils/db_sup
 import { callMistral } from "./mistral/callMistral";
 import { callGemini } from "./google/callGoogle";
 import hashSQLResults from "./dbutils/hashSqlResults";
+import { performOpenAIChatTask } from "./openAi/openaiChatCompletions";
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -62,7 +63,8 @@ export async function generatePromptResponseTypeSQL(message) {
   let response = "";
   switch (message.provider) {
     case "OpenAI":
-      response = await callOpenAI(message.model, message.persona, message.instructions, message.query);
+      // response = await callOpenAI(message.model, message.persona, message.instructions, message.query);
+      response = performOpenAIChatTask(message.model, message.persona, message.instructions, message.query);
       break;
     case "Mistral":
       response = await callMistral(message.model, message.persona, message.instructions, message.query);
@@ -76,7 +78,7 @@ export async function generatePromptResponseTypeSQL(message) {
     default:
   }
 
-  response = await callMistral("mistral-small-latest", "SQLAssistant", " ", response);
+  // response = await callMistral("mistral-small-latest", "SQLAssistant", " ", response);
   // console.log("actions.js-generatePromptResponse: ", response);
 
   return response;

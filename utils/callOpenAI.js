@@ -72,7 +72,7 @@ async function loadPersonaAndGenerateChatResponse(modelName, persona, instructio
 
     const sqlStatement = "SELECT * FROM ab_persona WHERE persona_id = '" + persona + "';";
     const queryResult = await QueryDataFromSupabase(sqlStatement, "sqlRows");
-    fileContent = queryResult.message[0].persona;
+    const fileContent = queryResult.message[0].persona;
 
     const response = await openai.chat.completions.create({
       messages: [
