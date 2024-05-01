@@ -18,6 +18,15 @@ export default function HomePage() {
             Google or LinkedIn account to gain access. You personal information is neither requested or saved. I reserve
             the right to block access anytime.
           </p>
+          <div className="text-xl mt-16">Created by Sreenivas Angara</div>
+          <div className="flex flex-row gap-2">
+            <Link className="btn btn-link" href="https://cooolbabu.github.io/SreenivasAngara/">
+              Sreenivas Angara-Blog
+            </Link>
+            <Link className="btn btn-link" href="https://www.linkedin.com/in/sreenivasangara/">
+              Sreenivas Angara-LinkedIn
+            </Link>
+          </div>
         </div>
       </div>
       <Image src={analystBreweryImage} alt="Analytics Brewery" className="mb-6" />
