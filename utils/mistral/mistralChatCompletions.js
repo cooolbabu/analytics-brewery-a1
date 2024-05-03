@@ -1,5 +1,6 @@
 import MistralClient from "@mistralai/mistralai";
 import { QueryDataFromSupabase } from "../dbutils/db_supabase";
+import { extractAllSQL } from "../baseUtitls";
 
 const apiKey = process.env.MISTRAL_API_KEY;
 const client = new MistralClient(apiKey);
@@ -52,6 +53,8 @@ export async function performMistralChatTask(modelName, persona, instructions, p
     // Massage the response
     let chatResponseStr = response.choices[0].message.content;
     console.log("chatResponseStr: \n", chatResponseStr);
+    // chatResponseStr = await GenerateBrewCraftersResponseMistral({ promptQuery: chatResponseStr });
+    chatResponseStr = extractAllSQL(chatResponseStr);
 
     // Remove unnecessary escape characters before underscores
     // chatResponseStr = chatResponseStr.replace(/^```json|```$/g, "");
@@ -61,6 +64,55 @@ export async function performMistralChatTask(modelName, persona, instructions, p
     console.log("Returning from performMistralChatTask...", chatResponseStr);
     return chatResponseStr;
   } catch (error) {
-    console.log("Failed to fetch completions:", error.message);
+    console.log("Failed to fetch completions from Mistral.\n", error.message);
+    return "Failed to fetch completions from Mistral:\n\t" + error.message;
   }
+}
+
+/**
+ * Using Mistral small model to extract SQL and comments from a given message.
+ *
+ * @param {string} promptMessage - The prompt message to generate chat response.
+ * @returns {Promise<string>} The generated chat response.
+ */
+
+export async function GenerateBrewCraftersResponseMistral({ promptMessage }) {
+  let instructions = "";
+
+  const modelName = "mistral-small-latest";
+  // console.log("SQLAssistant persona selected - ", modelName);
+
+  try {
+    instructions = `
+        You are a SQL programmer who can write SQL code. You will given a message that may or may not contain SQL code with explanations.
+        If the message does not contain any SQL code, return the message as is.
+        If the message contains SQL code, then seperated the SQL code and explanations.
+        Summarize the explanations as comments. Return SQL code.
+        Important: Your repsonse should contain only SQL code and comments that can be executed in a SQL environment.      
+        `;
+
+    // console.log("\n\nModel: ", modelName);
+    // console.log("Chat message to Mistral: ", chatMessage);
+    const response = await fetchMistralCompletions(modelName, " ", instructions, promptMessage);
+    console.log("Result:", response);
+    console.log("Result:", response.choices[0].message.content);
+    return response.choices[0].message.content;
+  } catch (error) {
+    console.log("callMistral.js - GenerateBrewCraftersResponseMistral", error);
+    return "Returning from GenerateBrewCraftersResponseMistral:\n " + error.message;
+  }
+
+  // // console.log(response.choices[0].message.content);
+  // // const cleanedJsonString = response.choices[0].message.content.trim().replace(/^```json|```$/g, "");
+  // // console.log("cleanedJsonString: ", cleanedJsonString);
+  // // const responseStr = JSON.parse(cleanedJsonString).query;
+  // // console.log("responseStr: ", responseStr);
+  // // //console.log(JSON.parse(response.choices[0].message.content).query);
+  // // console.log("Returning from generateChatResponse");
+
+  // console.log("Response from Mistral -------------------------------------\n", chatResponse.choices[0].message.content);
+  let chatResponseStr = chatResponse.choices[0].message.content;
+  // console.log("call Mistral.js-chatResponseStr: \n", chatResponseStr);
+
+  return chatResponseStr;
 }

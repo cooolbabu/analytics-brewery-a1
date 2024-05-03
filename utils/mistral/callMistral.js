@@ -293,7 +293,7 @@ export async function GenerateBrewCraftersResponseMistral({
 
   // console.log("Response from Mistral -------------------------------------\n", chatResponse.choices[0].message.content);
   let chatResponseStr = chatResponse.choices[0].message.content;
-  // console.log("call Mistral.js-chatResponseStr: \n", chatResponseStr);
+  console.log("call Mistral.js-chatResponseStr: \n", chatResponseStr);
 
   return chatResponseStr;
 }

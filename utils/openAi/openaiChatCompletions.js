@@ -1,4 +1,5 @@
 import OpenAI from "openai";
+import { extractAllSQL } from "../baseUtitls";
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -14,6 +15,10 @@ function timeout(ms) {
 }
 
 async function fetchCompletions(modelName, persona, instructions, promptMessage) {
+  console.log(
+    "fetchCompletions(opeaai): modelName: ",
+    instructions + "\n" + persona + "\n" + "\n" + promptMessage + "\n" + modelName
+  );
   try {
     const response = await Promise.race([
       openai.chat.completions.create({
@@ -54,16 +59,18 @@ export async function performOpenAIChatTask(modelName, persona, instructions, pr
 
     // Massage the response
     let chatResponseStr = response.choices[0].message.content;
+    chatResponseStr = extractAllSQL(chatResponseStr);
     console.log("chatResponseStr: \n", chatResponseStr);
 
     // Remove unnecessary escape characters before underscores
-    chatResponseStr = chatResponseStr.replace(/^```json|```$/g, "");
-    chatResponseStr = chatResponseStr.replace(/^```sql|```$/g, "");
-    chatResponseStr = chatResponseStr.replace(/\\_/g, "_");
+    // chatResponseStr = chatResponseStr.replace(/^```json|```$/g, "");
+    // chatResponseStr = chatResponseStr.replace(/^```sql|```$/g, "");
+    // chatResponseStr = chatResponseStr.replace(/\\_/g, "_");
 
     console.log("Returning from generateChatResponse");
     return chatResponseStr;
   } catch (error) {
-    console.log("Failed to fetch completions:", error.message);
+    console.log("Failed to fetch completions from OpenAI.\n:", error.message);
+    return "Failed to fetch completions from OpenAI.\n:", error.message;
   }
 }

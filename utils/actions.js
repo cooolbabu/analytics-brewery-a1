@@ -62,15 +62,28 @@ export async function generatePromptResponseTypeSQL(message) {
 
   // callOpenAI fucntion from callOpenAI.js
   let response = "";
+  let personaContent = "";
+
+  // Check to ensure that Persona is valid. If not, return an error message.
+  switch (message.persona) {
+    case "ChinookAssistant":
+      const sqlStatement = "SELECT * FROM ab_persona WHERE persona_id = '" + message.persona + "';";
+      const queryResult = await QueryDataFromSupabase(sqlStatement, "sqlRows");
+      personaContent = queryResult.message[0].persona;
+      break;
+    default:
+      response = "Invalid Persona";
+  }
+
   switch (message.provider) {
     case "OpenAI":
       // response = await callOpenAI(message.model, message.persona, message.instructions, message.query);
-      response = performOpenAIChatTask(message.model, message.persona, message.instructions, message.query);
+      response = performOpenAIChatTask(message.model, personaContent, message.instructions, message.query);
       break;
     case "Mistral":
       // response = await callMistral(message.model, message.persona, message.instructions, message.query);
       console.log("Performing performMistralChatTask task...");
-      response = performMistralChatTask(message.model, message.persona, message.instructions, message.query);
+      response = performMistralChatTask(message.model, personaContent, message.instructions, message.query);
 
       break;
     case "Anthropic":
@@ -299,19 +312,19 @@ export async function generateTourResponse({ city, country }) {
  * @returns {Promise<void>} - A promise that resolves when the prompt results are saved.
  */
 export async function SaveCraftersPromptResults({ promptTemplateId, userId, promptTemplate, promptTemplateDesc }) {
-  // console.log(
-  //   "actions.js: saveCraftersPromptResults invoked: ",
-  //   promptTemplateId,
-  //   userId,
-  //   promptTemplate,
-  //   promptTemplateDesc
-  // // );
+  console.log(
+    "actions.js: saveCraftersPromptResults invoked: ",
+    promptTemplateId,
+    userId,
+    promptTemplate,
+    promptTemplateDesc
+  );
 
   let queryStr = "";
   let values = [];
   try {
     // if (promptTemplateId === "" || promptTemplateId === "abc123") {
-    if (promptTemplateId === "") {
+    if (!promptTemplateId) {
       queryStr =
         "INSERT INTO ab_prompt_template (user_id, prompt_template, prompt_template_desc) VALUES ($1, $2, $3) RETURNING prompt_template_id;";
       values = [userId, promptTemplate, promptTemplateDesc];
@@ -323,7 +336,7 @@ export async function SaveCraftersPromptResults({ promptTemplateId, userId, prom
     }
     // console.log("\n\nactions.js: Before InsertRowSupabase: ");
     const result = await InsertRowSupabase(queryStr, values);
-    // console.log("\n\nactions.js: After InsertRowSupabase: ", result);
+    console.log("\n\nactions.js: After InsertRowSupabase: ", result);
 
     if (result.rowCount > 0) {
       return { success: true, data: "Succesfully saved the prompt details" };
