@@ -7,6 +7,7 @@ import { callMistral } from "./mistral/callMistral";
 import { callGemini } from "./google/callGoogle";
 import hashSQLResults from "./dbutils/hashSqlResults";
 import { performOpenAIChatTask } from "./openAi/openaiChatCompletions";
+import { performMistralChatTask } from "./mistral/mistralChatCompletions";
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -67,7 +68,10 @@ export async function generatePromptResponseTypeSQL(message) {
       response = performOpenAIChatTask(message.model, message.persona, message.instructions, message.query);
       break;
     case "Mistral":
-      response = await callMistral(message.model, message.persona, message.instructions, message.query);
+      // response = await callMistral(message.model, message.persona, message.instructions, message.query);
+      console.log("Performing performMistralChatTask task...");
+      response = performMistralChatTask(message.model, message.persona, message.instructions, message.query);
+
       break;
     case "Anthropic":
       response = "Anthropic is not available";
